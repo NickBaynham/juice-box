@@ -4,6 +4,10 @@ Status: Draft
 Date: 2026-08-14
 Owner: Nick Baynham
 
+Sections 1 through 30 are the original specification and are preserved as
+written. Where two sections conflict, section 31 governs and names the
+architecture decision record that resolves the conflict.
+
 ## 1. Overview
 
 Juice Box is a containerized orchestration platform for autonomous AI agents.
@@ -1118,3 +1122,25 @@ reports completion
 without requiring the caller to manage the underlying agent execution loop.
 
 That is the core contract of Juice Box.
+
+## 31. Amendments and Resolved Decisions
+
+Five conflicts between sections 1 through 30 were resolved on 2026-08-14.
+Each is governed by an architecture decision record under
+`.dev-commander/design/`. Where a section below disagrees with this table,
+this table wins.
+
+| # | Conflict | Resolution | Record |
+|---|----------|------------|--------|
+| 1 | Section 22 lists PostgreSQL as the initial stack; section 26 lists it as a Phase 2 addition. | PostgreSQL, SQLAlchemy async, and Alembic are used from the first increment that persists anything. No SQLite path. "PostgreSQL persistence" is removed from section 26. | ADR-0001 |
+| 2 | Section 12 requires state to survive restarts and resume from a checkpoint; section 26 defers restart/resume to Phase 2. | The MVP delivers durability: every transition, iteration, message, and event is written to PostgreSQL before the next action. Resumption of an interrupted run is Phase 2. An interrupted run becomes `FAILED` with reason `interrupted`; MVP restart starts a fresh run. | ADR-0002 |
+| 3 | Section 30 requires a `juicebox` CLI; sections 21 and 23 define no CLI. | A Typer CLI ships in the MVP at `src/juicebox/cli/`, added to section 23. It is a thin client over the section 21 API with no validation or lifecycle logic of its own. | ADR-0003 |
+| 4 | Section 8 puts `require_approval_for` in the MVP agent definition; section 26 defers approval gates to Phase 2. | The MVP validates the field and fails closed: a gated operation is refused, its task fails with reason `approval_required`, and `approval.requested` is emitted. The approve and deny round trip is Phase 2. `permissions` is enforced at the container and tool boundary in the MVP. | ADR-0004 |
+| 5 | Section 24 requires at least one provider; section 22 and section 23 assume two. | The MVP ships Anthropic plus a first-class fake provider at `providers/fake.py`, added to section 23. The fake keeps the abstraction honest and lets tests run offline. OpenAI moves to Phase 2 as the test of whether the abstraction held. | ADR-0005 |
+
+### Decomposition
+
+Section 24's MVP spans roughly ten subsystems and is not a single unit of
+work. It is decomposed into twelve ordered workstreams, W0 through W11, in
+`.dev-commander/design/0001-mvp-decomposition.md`. Each workstream becomes
+one implementation plan under `.dev-commander/plans/`.
