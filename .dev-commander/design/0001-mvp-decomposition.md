@@ -77,31 +77,43 @@ Per ADR-0004 for permission enforcement.
 Exit: a container starts, clones a fixture repository, creates the work
 branch, and is torn down cleanly.
 
-**W7. Provider layer.** Provider protocol, the fake provider, and the
+**W7. Skills.** Filesystem skill loader, the `skill.yaml` format from
+section 14, tool granting subject to `permissions`, instruction injection
+into the system prompt, `requirements.commands` verification at container
+start, a `list_skills` tool, and the built-in `git`, `coding`, and
+`testing` skills. Depends on W5, W6. Per ADR-0007.
+Exit: a definition naming an unknown skill is rejected with 422; a run
+whose skill requires a missing command fails before the first model call.
+
+**W8. Provider layer.** Provider protocol, the fake provider, and the
 Anthropic provider. Depends on W0. Per ADR-0005.
 Exit: both implementations satisfy the same protocol test suite; the fake
 runs offline and deterministically.
 
-**W8. Execution loop.** Runner implementing section 10, iteration
+**W9. Execution loop.** Runner implementing section 10, iteration
 records, task decomposition and the section 11 task states, injection of
 messages received while running, completion and failure detection, and
-`max_iterations` and timeout enforcement. Depends on W2, W4, W5, W6, W7.
-Per ADR-0002: state is written durably each iteration, and the loop need
-not be re-entrant.
+`max_iterations` and timeout enforcement. Depends on W2, W4, W5, W6, W7,
+W8. Per ADR-0002: state is written durably each iteration, and the loop
+need not be re-entrant. Pause is a flag checked at the iteration
+boundary, which needs no re-entrancy. Also adds the Docker socket mount
+to the `api` Compose service and puts container creation behind a runtime
+interface so a Fargate implementation is additive, per review 0002.
 Exit: a scripted objective runs to `COMPLETED` against the fake provider.
 
-**W9. Completion and reporting.** Final commit, branch push, execution
+**W10. Completion and reporting.** Final commit, branch push, execution
 report generation from persisted records, and the artifacts endpoints.
-Depends on W8.
+Depends on W9.
 Exit: a completed run pushes its branch and exposes a retrievable report.
 
-**W10. CLI.** Typer console script with `run`, `status`, `logs`,
-`message`, and `stop`. Depends on W3. Per ADR-0003.
+**W11. CLI.** Typer console script with `run`, `status`, `logs`,
+`message`, and `stop`. Depends on W3. Per ADR-0003 and ADR-0006.
 Exit: the section 30 command sequence works against a running API.
 
-**W11. Acceptance.** The section 25 end-to-end scenario as an automated
-test, run against the fake provider in CI and against Anthropic manually.
-Depends on W9, W10.
+**W12. Acceptance.** The section 25 end-to-end scenario as an automated
+test, run against the fake provider in CI and against Anthropic manually,
+plus the `playwright-testing` skill the scenario needs. Depends on W10,
+W11.
 Exit: all twelve steps of section 25 pass.
 
 ### Phase 2 and beyond
@@ -134,25 +146,42 @@ owns them:
 
 - W1 owns the ORM models and the repository layer's async accessors.
 - W2 owns `AgentDefinition` and `Objective` as Pydantic models.
+- W3 owns the lifecycle state machine and the HTTP surface.
 - W4 owns `EventBus.emit(event_name, payload)` and the event name set.
 - W5 owns `Tool.execute(request: ToolRequest) -> ToolResult`.
 - W6 owns `Workspace` and the container lifecycle handle.
-- W7 owns the provider protocol in `providers/base.py`.
-- W8 owns `Runner`, which consumes all of the above.
+- W7 owns `Skill` and `SkillLoader`.
+- W8 owns the provider protocol in `providers/base.py`.
+- W9 owns `Runner` and the `ContainerRuntime` interface, and consumes all
+  of the above.
 
 No workstream may reach past these boundaries into another's internals.
+
+## Test Commander integration
+
+Per ADR-0008, Test Commander works from the specification while the plans
+work from the code. Requirements are inventoried from spec sections 24
+and 25, traced to the workstreams above, and expressed as API-level
+acceptance scenarios under `tests/acceptance/`. Those scenarios run at
+workstream boundaries, not per increment. Exploratory and UI-driven Test
+Commander commands have no target until the Phase 2 dashboard exists and
+are not used before then.
 
 ## Risks
 
 - **Container-in-container.** Running agent containers from a
   containerized API needs a mounted Docker socket or a host-side runner.
-  W6 must settle this early; it is the most likely source of rework.
-- **Loop quality is not architectural.** W8 can pass its exit criteria
+  W6 and W9 must settle this early; it is the most likely source of
+  rework, because the same code must later run on Fargate where no
+  Docker socket exists. Mitigated by the runtime interface in W9.
+- **Loop quality is not architectural.** W9 can pass its exit criteria
   against the fake provider while producing a poor agent against a real
-  model. W11's manual Anthropic run is the only real check.
+  model. W12's manual Anthropic run is the only real check, and a green
+  CI run is not evidence the agent works.
 - **Agent container image size.** A container carrying Node, Playwright,
   and Python for the acceptance test will be large; image build time may
-  dominate the W11 feedback loop.
+  dominate the W12 feedback loop. Build it once and cache it rather than
+  rebuilding per test.
 - **Secret handling.** Spec section 17 is unresolved for the MVP beyond
   environment variables. W6 should not invent a secrets abstraction; an
   ADR is needed if requirements grow past environment injection.

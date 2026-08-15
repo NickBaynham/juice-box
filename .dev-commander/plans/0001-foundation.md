@@ -22,6 +22,9 @@ Compose, PostgreSQL 17.
 
 ## Global Constraints
 
+- Definition of done: design 0002. Every increment inherits its seven
+  increment criteria, and this workstream inherits its workstream
+  criteria. They are not restated per increment.
 - Every increment is test-first and ends in a commit.
 - Version pins are lower bounds; pdm resolves the current release at
   install time.
@@ -40,8 +43,9 @@ Compose, PostgreSQL 17.
 
 Files:
 `pyproject.toml`, `Makefile`, `.gitignore`, `README.md`, `CHANGELOG.md`,
-`TODO.md`, `src/juicebox/__init__.py`, `tests/unit/test_smoke.py`,
-`tests/__init__.py` is not created (pytest uses rootdir discovery).
+`FEATURES.md`, `TODO.md`, `src/juicebox/__init__.py`,
+`tests/unit/test_smoke.py`. No `tests/__init__.py` is created; pytest
+uses rootdir discovery.
 
 Failing test first — `tests/unit/test_smoke.py`:
 
@@ -68,8 +72,10 @@ Minimal implementation:
   (`pdm run ruff check .`), `test` (`pdm run pytest -m "not integration"`),
   `build` (`pdm build`), and a `run` target printing that it is defined in
   increment 4.
-- `README.md` under 400 lines linking to `CHANGELOG.md`, `TODO.md`, and
-  `docs/specs/juice-box-spec.md`.
+- `README.md` under 400 lines linking to `CHANGELOG.md`, `FEATURES.md`,
+  `TODO.md`, and `docs/specs/juice-box-spec.md`.
+- `FEATURES.md` listing only what works today, and `TODO.md` seeded from
+  the workstream list in design 0001.
 - `.gitignore` covering `__pycache__/`, `.pdm-python`, `.venv/`, `dist/`,
   `.pytest_cache/`, `.ruff_cache/`, `*.egg-info/`.
 
@@ -265,7 +271,40 @@ Verify: push the branch and confirm the workflow completes green.
 
 Commit: `Add CI workflow`
 
+### 8. Workstream close-out
+
+- [ ] Document what W0 produced, review it, and record the result.
+
+Files: `docs/development.md`, `README.md`, `CHANGELOG.md`,
+`FEATURES.md`, `TODO.md`
+
+Failing test first: none applies; this increment produces documentation
+and review records, and its executable check is that a reader who has
+never seen the repository can go from clone to a served health endpoint
+using only `docs/development.md`.
+
+Minimal implementation:
+
+- `docs/development.md` covering prerequisites, the Make targets, how to
+  run the API locally and in Compose, how to run unit versus integration
+  tests, and the settings keys with their defaults and env var names.
+- `README.md` links to it.
+- `CHANGELOG.md` Unreleased section records the foundation.
+- `FEATURES.md` lists the health endpoint, settings, container image, and
+  Compose environment as working today.
+- `TODO.md` lists W1 through W11 as not yet built.
+- Run `/dc:review` over the workstream diff and address every finding.
+- Run `/dc:journal` recording what was built and anything that deviated
+  from this plan.
+
+Verify: from a clean clone, follow `docs/development.md` verbatim and
+reach a 200 from `GET /health`; then `make lint test && pdm run pytest -m integration`.
+
+Commit: `Document the development workflow and close out W0`
+
 ## Exit Criteria
+
+Design 0002's workstream criteria apply in full. In addition:
 
 - `make install lint test build` passes from a clean checkout.
 - `make run` serves `GET /health` returning 200.

@@ -1,0 +1,3 @@
+# Permission Policy
+# Populated by `/tc:init (defaults) and Phase 10.5 commands` (Phase 10.5).
+# Maps roles (Viewer / Tester / Automation Engineer / Maintainer / Admin) to allowed permission levels. Defaults seeded by `/tc:init`; tunable per deployment.

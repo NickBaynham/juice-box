@@ -1,0 +1,3 @@
+# Approval Policy
+# Populated by `/tc:init (defaults) and Phase 10.5 commands` (Phase 10.5).
+# Which permission levels require explicit approval. Defaults seeded by `/tc:init`; tunable per deployment.

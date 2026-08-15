@@ -1138,9 +1138,28 @@ this table wins.
 | 4 | Section 8 puts `require_approval_for` in the MVP agent definition; section 26 defers approval gates to Phase 2. | The MVP validates the field and fails closed: a gated operation is refused, its task fails with reason `approval_required`, and `approval.requested` is emitted. The approve and deny round trip is Phase 2. `permissions` is enforced at the container and tool boundary in the MVP. | ADR-0004 |
 | 5 | Section 24 requires at least one provider; section 22 and section 23 assume two. | The MVP ships Anthropic plus a first-class fake provider at `providers/fake.py`, added to section 23. The fake keeps the abstraction honest and lets tests run offline. OpenAI moves to Phase 2 as the test of whether the abstraction held. | ADR-0005 |
 
+A second review on the same date found three further conflicts, recorded
+in `.dev-commander/reviews/0002-consistency-and-feasibility.md`.
+
+| # | Conflict | Resolution | Record |
+|---|----------|------------|--------|
+| 6 | Section 21 keys every endpoint on `/agents/{id}`; section 30 passes a `<run-id>` that no endpoint accepts and no call returns. | The agent id is the handle. An agent is bound to one objective; a Run is one attempt at it and is persisted but not keyed on by any MVP endpoint. `GET /agents/{id}/status` returns a `current_run` object. Section 30's `<run-id>` is amended to `<agent-id>`. | ADR-0006 |
+| 7 | Section 8 accepts a `skills` list and section 14 describes a skills system, but no MVP workstream consumed either, so the field would have been silently ignored. | Skills are filesystem-backed instruction bundles loaded from the `skills/` directory. A skill grants tools subject to `permissions`, injects instructions into the system prompt, and declares required commands verified before the first model call. An unknown skill name is a 422. Registry, versioning, and dynamic loading stay in Phase 2. | ADR-0007 |
+| 8 | Section 6 draws `FAILED` and `STOPPED` as terminal, but ADR-0002 requires `POST /agents/{id}/restart` to start a fresh attempt from them. | The state machine permits `FAILED -> STARTING` and `STOPPED -> STARTING` as restart edges, and only those. `COMPLETED` remains terminal. `WAITING` is defined but unreachable in the MVP, because ADR-0004 has approval-gated operations fail closed rather than suspend. | Review 0002 |
+
 ### Decomposition
 
 Section 24's MVP spans roughly ten subsystems and is not a single unit of
-work. It is decomposed into twelve ordered workstreams, W0 through W11, in
-`.dev-commander/design/0001-mvp-decomposition.md`. Each workstream becomes
-one implementation plan under `.dev-commander/plans/`.
+work. It is decomposed into thirteen ordered workstreams, W0 through W12,
+in `.dev-commander/design/0001-mvp-decomposition.md`. Each workstream
+becomes one implementation plan under `.dev-commander/plans/`, numbered
+0001 through 0013.
+
+### Quality process
+
+Design 0002 defines the definition of done at increment, workstream, and
+phase level. ADR-0008 divides the two quality systems in the repository:
+dev-commander plans own test-first unit and integration testing per
+increment, and Test Commander owns requirements traceability from this
+specification plus API-level acceptance scenarios that run at workstream
+boundaries.
