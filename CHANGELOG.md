@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Settings ignores unrelated keys in `.env` instead of refusing to start, so
+  a shared `.env` can hold configuration for other tools.
+- Unit tests are isolated from `JUICEBOX_` variables and from a developer's
+  `.env` file, so the tests asserting defaults no longer depend on the
+  environment they run in.
+
 ### Added
 
 - pdm project skeleton with the `juicebox` package and a version smoke test.
