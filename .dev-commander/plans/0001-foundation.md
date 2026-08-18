@@ -209,8 +209,10 @@ seconds elapse, assert the payload, and remove the container in a
 `finally` block.
 
 Minimal implementation: a Dockerfile based on `python:3.12-slim` that
-installs pdm, copies `pyproject.toml` and `pdm.lock`, runs
-`pdm install --prod --no-editable`, copies the source, exposes 8000, and
+installs pdm, copies `pyproject.toml` and `pdm.lock`, installs the
+dependencies with `pdm install --prod --no-self`, copies the source,
+installs the project with `pdm install --prod --no-editable`, exposes
+8000, and
 sets `CMD ["pdm", "run", "python", "-m", "juicebox"]`. `.dockerignore`
 excludes `.git`, `.venv`, `__pycache__`, `.pytest_cache`, `.ruff_cache`,
 `dist`, and `.dev-commander`.
@@ -260,8 +262,8 @@ Failing test first: none applies; the executable check is the first CI
 run reporting success on the branch.
 
 Minimal implementation: generate the workflow from the dev-commander
-Python CI template at
-`templates/ci/github/python/ci.yml.tmpl`, substituting the project name.
+plugin's Python CI template (`templates/ci/github/python/ci.yml.tmpl`
+within the installed plugin), substituting the project name.
 The template's ubuntu-latest runner already provides Docker, so the
 `make test` step starts the database through Compose and no service
 container block is needed. Add a step running
@@ -292,7 +294,7 @@ Minimal implementation:
 - `CHANGELOG.md` Unreleased section records the foundation.
 - `FEATURES.md` lists the health endpoint, settings, container image, and
   Compose environment as working today.
-- `TODO.md` lists W1 through W11 as not yet built.
+- `TODO.md` lists W1 through W12 as not yet built.
 - Run `/dc:review` over the workstream diff and address every finding.
 - Run `/dc:journal` recording what was built and anything that deviated
   from this plan.
@@ -313,3 +315,31 @@ Design 0002's workstream criteria apply in full. In addition:
 - CI is green on the branch.
 - The workstream W0 entry in design 0001 can be checked off, and W1, W2,
   W5, and W7 are unblocked.
+
+## Corrections to this plan
+
+Recorded after implementation. The plan text above has been amended; this
+section records what was wrong and why, so the record is not silently
+rewritten.
+
+1. Increment 5 specified installing dependencies before copying the source.
+   That order is not executable: increment 1 sets
+   `[tool.pdm] distribution = true`, so `pdm install` also builds the
+   project itself and fails with `FileNotFoundError: 'src'` when `src` is
+   absent. Reproduced twice, once during implementation and once
+   independently during review. The implementation shipped a single
+   `pdm install --prod --no-editable` after copying the source, which is
+   correct but reinstalls every dependency whenever a source file changes.
+   The amended text specifies the two-stage form that is both executable
+   and cache-friendly; adopt it in W1, when the dependency set grows.
+2. Increment 7 named a CI template path that does not exist in this
+   repository. The template ships inside the installed dev-commander
+   plugin. The amended text names the resolution rule rather than an
+   absolute path, which is version-pinned and machine-specific.
+3. Increment 8 said `TODO.md` should list W1 through W11. Design 0001 has
+   thirteen workstreams, W0 through W12. `TODO.md` shipped correct.
+4. Increment 8's commit landed as `Document the W0 foundation and close out
+   the workstream` rather than the subject named here, and as two commits
+   rather than one: a self-review found an unverified claim in
+   `docs/development.md` after the first commit. Left as shipped; the
+   history is published and the wording is equivalent.
