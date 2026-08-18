@@ -123,7 +123,7 @@ Commit: `Add settings module reading configuration from the environment`
 
 ### 3. Application factory and health endpoint
 
-- [ ] Serve `GET /health` from a FastAPI application built by a factory.
+- [x] Serve `GET /health` from a FastAPI application built by a factory.
 
 Files: `src/juicebox/api/__init__.py`, `src/juicebox/api/health.py`,
 `src/juicebox/app.py`, `tests/unit/test_health.py`

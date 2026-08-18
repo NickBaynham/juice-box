@@ -13,3 +13,4 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Documentation set: README, changelog, feature list, and to do list.
 - Settings module reading configuration from `JUICEBOX_`-prefixed
   environment variables or a `.env` file.
+- FastAPI application factory serving `GET /health`.

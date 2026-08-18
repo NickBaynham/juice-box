@@ -15,3 +15,9 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Typed settings for API host, API port, log level, and database URL, read
   from `JUICEBOX_`-prefixed environment variables or a `.env` file, each with
   a working local default.
+
+## API
+
+- FastAPI application built by a factory, titled Juice Box and versioned from
+  the package.
+- `GET /health` returning the service status and running version.
