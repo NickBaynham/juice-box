@@ -273,7 +273,7 @@ Commit: `Add CI workflow`
 
 ### 8. Workstream close-out
 
-- [ ] Document what W0 produced, review it, and record the result.
+- [x] Document what W0 produced, review it, and record the result.
 
 Files: `docs/development.md`, `README.md`, `CHANGELOG.md`,
 `FEATURES.md`, `TODO.md`

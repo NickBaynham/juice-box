@@ -6,7 +6,7 @@ isolated containers.
 
 ## Status
 
-Early development. Workstream W0 (project foundation) is in progress. See
+Early development. Workstream W0 (project foundation) is complete. See
 [FEATURES.md](FEATURES.md) for what works today and [TODO.md](TODO.md) for
 what is planned.
 
@@ -23,21 +23,13 @@ make install
 make lint
 make test
 make build
+make run
 ```
 
-## Make targets
-
-| Target | Purpose |
-| --- | --- |
-| `help` | List available targets |
-| `install` | Install dependencies with pdm |
-| `lint` | Run ruff |
-| `test` | Start the database via Compose, then run unit tests (integration tests are excluded) |
-| `build` | Build the distribution |
-| `run` | Build and start the full stack (API and database) via Docker Compose |
-
-Tests marked `integration` require Docker services and are excluded from
-`make test`. Run them with `pdm run pytest -m integration`.
+`make run` serves `GET /health` on `localhost:8000`. See
+[docs/development.md](docs/development.md) for prerequisites, every Make
+target, running the API with and without Docker, unit versus integration
+tests, and the full settings reference.
 
 ## Layout
 
@@ -51,6 +43,7 @@ Tests marked `integration` require Docker services and are excluded from
 
 ## Documentation
 
+- [Development guide](docs/development.md)
 - [Specification](docs/specs/juice-box-spec.md)
 - [Feature list](FEATURES.md)
 - [To do](TODO.md)

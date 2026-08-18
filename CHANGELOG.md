@@ -22,3 +22,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   starting the database and `make run` starting the full stack.
 - CI workflow running install, lint, unit tests, integration tests, build,
   a dependency scan, and a secret scan on every push and pull request.
+- Development guide (`docs/development.md`) covering prerequisites, Make
+  targets, running the API locally and under Compose, unit versus
+  integration tests, and the settings reference. Closes out workstream
+  W0: project foundation.

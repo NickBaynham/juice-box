@@ -9,7 +9,11 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Pytest suite with an `integration` marker that separates tests requiring
   Docker services from the default unit run.
 - Ruff linting across the repository.
-- `make run` serves the API locally through uvicorn.
+- `make run` builds and starts the API and database via Docker Compose;
+  `pdm run python -m juicebox` serves the API directly through uvicorn
+  without Docker.
+- Development guide (`docs/development.md`) covering setup, every Make
+  target, running the API, and the settings reference.
 
 ## Configuration
 

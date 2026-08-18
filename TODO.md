@@ -4,11 +4,8 @@ Workstreams from the [MVP decomposition](.dev-commander/design/0001-mvp-decompos
 A workstream is complete when its exit criteria pass and every increment of
 its plan is committed.
 
-## Phase 0: foundation
-
-- [ ] W0. Project foundation. pdm project, Make targets, Docker Compose with
-      PostgreSQL, Dockerfile, FastAPI application, `GET /health`, settings
-      module, docs set.
+Phase 0 (W0, project foundation) is complete; see
+[FEATURES.md](FEATURES.md).
 
 ## Phase 1: MVP
 
