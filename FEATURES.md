@@ -9,6 +9,7 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Pytest suite with an `integration` marker that separates tests requiring
   Docker services from the default unit run.
 - Ruff linting across the repository.
+- `make run` serves the API locally through uvicorn.
 
 ## Configuration
 

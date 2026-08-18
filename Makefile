@@ -17,5 +17,5 @@ test: ## Run unit tests
 build: ## Build the distribution
 	pdm build
 
-run: ## Run the API (defined in increment 4)
-	@echo "make run is defined in plan 0001 increment 4"
+run: ## Run the API
+	pdm run python -m juicebox

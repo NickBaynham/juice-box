@@ -14,3 +14,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Settings module reading configuration from `JUICEBOX_`-prefixed
   environment variables or a `.env` file.
 - FastAPI application factory serving `GET /health`.
+- Uvicorn entrypoint: `python -m juicebox` and `make run` serve the API on
+  the configured host and port.

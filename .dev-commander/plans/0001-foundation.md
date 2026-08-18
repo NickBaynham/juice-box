@@ -156,7 +156,7 @@ Commit: `Add application factory and health endpoint`
 
 ### 4. Uvicorn entrypoint and make run
 
-- [ ] Start the API with `make run` using the settings from increment 2.
+- [x] Start the API with `make run` using the settings from increment 2.
 
 Files: `src/juicebox/__main__.py`, `tests/unit/test_entrypoint.py`,
 `Makefile`
