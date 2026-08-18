@@ -85,7 +85,7 @@ Commit: `Add pdm project skeleton and Make targets`
 
 ### 2. Settings module
 
-- [ ] Read configuration from the environment into a typed settings
+- [x] Read configuration from the environment into a typed settings
       object with usable defaults.
 
 Files: `src/juicebox/config/__init__.py`,

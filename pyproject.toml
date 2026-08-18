@@ -3,7 +3,9 @@ name = "juice-box"
 version = "0.1.0"
 description = "Containerized orchestration platform for autonomous AI agents"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pydantic-settings>=2.6",
+]
 
 [build-system]
 requires = ["pdm-backend"]

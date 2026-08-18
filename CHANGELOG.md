@@ -11,3 +11,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - pdm project skeleton with the `juicebox` package and a version smoke test.
 - Make targets for `help`, `install`, `lint`, `test`, `build`, and `run`.
 - Documentation set: README, changelog, feature list, and to do list.
+- Settings module reading configuration from `JUICEBOX_`-prefixed
+  environment variables or a `.env` file.

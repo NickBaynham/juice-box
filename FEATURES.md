@@ -9,3 +9,9 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Pytest suite with an `integration` marker that separates tests requiring
   Docker services from the default unit run.
 - Ruff linting across the repository.
+
+## Configuration
+
+- Typed settings for API host, API port, log level, and database URL, read
+  from `JUICEBOX_`-prefixed environment variables or a `.env` file, each with
+  a working local default.
