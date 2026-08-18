@@ -196,7 +196,7 @@ Commit: `Add uvicorn entrypoint and wire make run`
 
 ### 5. API container image
 
-- [ ] Build a container image that serves the health endpoint.
+- [x] Build a container image that serves the health endpoint.
 
 Files: `Dockerfile`, `.dockerignore`,
 `tests/integration/test_container_image.py`

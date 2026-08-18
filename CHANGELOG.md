@@ -16,3 +16,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - FastAPI application factory serving `GET /health`.
 - Uvicorn entrypoint: `python -m juicebox` and `make run` serve the API on
   the configured host and port.
+- Container image built from `python:3.12-slim` that installs the project
+  with pdm and serves `GET /health` on port 8000.

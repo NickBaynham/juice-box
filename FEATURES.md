@@ -22,3 +22,8 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - FastAPI application built by a factory, titled Juice Box and versioned from
   the package.
 - `GET /health` returning the service status and running version.
+
+## Container image
+
+- A `python:3.12-slim` based image installs the project with pdm and serves
+  the API through `python -m juicebox`, exposing port 8000.
