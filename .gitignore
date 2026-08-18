@@ -1,0 +1,7 @@
+__pycache__/
+.pdm-python
+.venv/
+dist/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/

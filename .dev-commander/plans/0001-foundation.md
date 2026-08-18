@@ -38,7 +38,7 @@ Compose, PostgreSQL 17.
 
 ### 1. pdm project, package skeleton, and Make targets
 
-- [ ] Create the pdm project so `import juicebox` works and the standard
+- [x] Create the pdm project so `import juicebox` works and the standard
       Make targets run.
 
 Files:
