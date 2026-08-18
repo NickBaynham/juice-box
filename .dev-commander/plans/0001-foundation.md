@@ -251,7 +251,7 @@ Commit: `Add compose services for PostgreSQL and prove reachability`
 
 ### 7. CI workflow
 
-- [ ] Run install, lint, test, build, and the security scans on every
+- [x] Run install, lint, test, build, and the security scans on every
       push and pull request.
 
 Files: `.github/workflows/ci.yml`

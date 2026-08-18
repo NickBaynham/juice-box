@@ -35,3 +35,9 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   the Dockerfile, configured to reach `db` by service name.
 - `make test` starts the database via Compose before running the test
   suite; `make run` builds and starts the full stack via Compose.
+
+## Continuous integration
+
+- GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push
+  and pull request: install, lint, unit tests, integration tests, build, a
+  `pip-audit` dependency scan, and a `gitleaks` secret scan.

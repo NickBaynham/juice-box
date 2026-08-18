@@ -20,3 +20,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with pdm and serves `GET /health` on port 8000.
 - Docker Compose services for PostgreSQL 17 and the API, with `make test`
   starting the database and `make run` starting the full stack.
+- CI workflow running install, lint, unit tests, integration tests, build,
+  a dependency scan, and a secret scan on every push and pull request.
