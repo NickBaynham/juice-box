@@ -18,3 +18,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the configured host and port.
 - Container image built from `python:3.12-slim` that installs the project
   with pdm and serves `GET /health` on port 8000.
+- Docker Compose services for PostgreSQL 17 and the API, with `make test`
+  starting the database and `make run` starting the full stack.

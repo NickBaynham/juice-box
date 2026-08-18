@@ -32,9 +32,9 @@ make build
 | `help` | List available targets |
 | `install` | Install dependencies with pdm |
 | `lint` | Run ruff |
-| `test` | Run unit tests (integration tests are excluded) |
+| `test` | Start the database via Compose, then run unit tests (integration tests are excluded) |
 | `build` | Build the distribution |
-| `run` | Run the API locally |
+| `run` | Build and start the full stack (API and database) via Docker Compose |
 
 Tests marked `integration` require Docker services and are excluded from
 `make test`. Run them with `pdm run pytest -m integration`.

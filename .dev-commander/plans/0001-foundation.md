@@ -221,7 +221,7 @@ Commit: `Add API container image`
 
 ### 6. Compose services and database reachability
 
-- [ ] Run PostgreSQL and the API under Compose, make `make test` start
+- [x] Run PostgreSQL and the API under Compose, make `make test` start
       the database, and prove the test session can reach it.
 
 Files: `docker-compose.yml`, `Makefile`,

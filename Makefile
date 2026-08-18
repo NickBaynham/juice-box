@@ -11,11 +11,12 @@ install: ## Install dependencies
 lint: ## Run the linter
 	pdm run ruff check .
 
-test: ## Run unit tests
+test: ## Start the database and run unit tests
+	docker compose up -d --wait db
 	pdm run pytest -m "not integration"
 
 build: ## Build the distribution
 	pdm build
 
-run: ## Run the API
-	pdm run python -m juicebox
+run: ## Build and start the Compose stack
+	docker compose up -d --build

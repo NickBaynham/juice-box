@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: juicebox
+      POSTGRES_PASSWORD: juicebox
+      POSTGRES_DB: juicebox
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U juicebox"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      JUICEBOX_DATABASE_URL: postgresql+asyncpg://juicebox:juicebox@db:5432/juicebox
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
