@@ -71,8 +71,10 @@ Tests are split by the `integration` pytest marker (declared in
 `pyproject.toml`). Integration tests need Docker; unit tests do not.
 
 - Unit tests only: `make test`. This starts the `db` Compose service
-  first (some unit tests import modules that read settings), then runs
-  `pdm run pytest -m "not integration"`.
+  first, per ADR-0001 (PostgreSQL is the persistence store from the
+  first increment that needs it, so the test target always brings the
+  database up), then runs `pdm run pytest -m "not integration"`. None of
+  the current unit tests touch the database directly.
 - Integration tests: `pdm run pytest -m integration`. Requires Docker;
   it builds the container image, runs it publishing host port 8001, and
   polls `http://localhost:8001/health`, and separately opens a direct
