@@ -145,6 +145,20 @@ an empty `upgrade()` and exits 0. `Base` lives in `models.py` alongside
 the models so there is one module to import. Leave `sqlalchemy.url` empty
 in `alembic.ini` so the database URL is never committed.
 
+Delete the two guards in `tests/integration/conftest.py` that increment 1
+needed while no schema existed, and hoist their imports to module level.
+Once migrations and models land, both branches are permanently dead, which
+the definition of done forbids. Keep `script_location` in the `%(here)s`
+form Alembic generates; a bare relative path resolves against pytest's
+working directory instead of the ini file.
+
+Add the tripwire the harness otherwise lacks: assert
+`Base.metadata.sorted_tables` is non-empty. A truncation fixture that
+silently stops firing leaves every later increment testing against dirty
+data with nothing going red, and the first assertions that would notice
+are the ordering and offset tests three increments later. The migration
+test's `alembic_version` assertion covers the other fixture.
+
 Edit `migrations/script.py.mako` before generating any revision: replace
 `from typing import Sequence, Union` with
 `from collections.abc import Sequence`, and `Union[str, Sequence[str],
