@@ -104,7 +104,7 @@ Commit: `Add async engine, session factory, and integration test harness`
 
 ### 2. Alembic and the first schema
 
-- [ ] Manage the schema with Alembic and store agents and their run
+- [x] Manage the schema with Alembic and store agents and their run
       attempts.
 
 Files: `alembic.ini`, `migrations/env.py`, `migrations/script.py.mako`,

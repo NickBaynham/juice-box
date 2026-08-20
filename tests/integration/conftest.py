@@ -3,28 +3,30 @@
 from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import text
 
 from juicebox.persistence.database import session_scope
+from juicebox.persistence.models import Base
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-ALEMBIC_INI = REPO_ROOT / "alembic.ini"
+ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
+
+
+def _config() -> Config:
+    return Config(str(ALEMBIC_INI))
 
 
 @pytest.fixture(scope="session", autouse=True)
 def schema_at_head():
-    """Bring the database to the latest migration before the suite runs.
+    """Bring the database to the latest migration before the suite runs."""
+    command.upgrade(_config(), "head")
 
-    A no-op until an increment adds `alembic.ini`; there is no migration
-    to apply yet.
-    """
-    if not ALEMBIC_INI.exists():
-        return
 
-    from alembic import command
-    from alembic.config import Config
-
-    command.upgrade(Config(str(ALEMBIC_INI)), "head")
+@pytest.fixture
+def alembic_config() -> Config:
+    """Alembic configuration for tests that drive migrations themselves."""
+    return _config()
 
 
 @pytest.fixture(autouse=True)
@@ -32,13 +34,10 @@ async def truncate_tables():
     """Truncate every table in `Base.metadata` before each test.
 
     Isolates tests from each other and from the persistent `db-data`
-    Compose volume. A no-op until an increment adds
-    `juicebox.persistence.models`; there are no tables to truncate yet.
+    Compose volume. The assertion is a tripwire: an empty metadata would
+    make this fixture silently stop isolating anything.
     """
-    try:
-        from juicebox.persistence.models import Base
-    except ModuleNotFoundError:
-        return
+    assert Base.metadata.sorted_tables, "no tables registered on Base.metadata"
 
     table_names = ", ".join(f'"{table.name}"' for table in Base.metadata.sorted_tables)
 

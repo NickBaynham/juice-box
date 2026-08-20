@@ -19,8 +19,9 @@ make install
 ```
 
 `make install` runs `pdm install`, which creates a `.venv` and installs
-the project plus its dev dependency group (ruff, pytest, pytest-asyncio,
-httpx, asyncpg).
+the project and its runtime dependencies (FastAPI, uvicorn,
+pydantic-settings, SQLAlchemy, asyncpg, Alembic) plus its dev dependency
+group (ruff, pytest, pytest-asyncio, httpx).
 
 ## Make targets
 
@@ -89,8 +90,55 @@ every integration test that needs the schema: a session-scoped fixture
 that brings the database to the latest Alembic migration, and a
 function-scoped fixture that truncates every table in `Base.metadata`
 before each test so leftover rows on the persistent `db-data` volume
-cannot leak between test runs. Both are no-ops until a later increment
-adds `alembic.ini` and `juicebox.persistence.models`.
+cannot leak between test runs. The truncation fixture asserts that
+`Base.metadata` holds at least one table, so it cannot silently stop
+isolating tests if the models module is ever mis-imported.
+
+## Database schema and migrations
+
+The schema lives in `src/juicebox/persistence/models.py` and is applied by
+Alembic. `migrations/env.py` imports that module — that import is what
+populates `Base.metadata`; without it `--autogenerate` produces an empty
+revision and exits 0.
+
+Apply the schema to a running database:
+
+```
+docker compose up -d --wait db
+pdm run alembic upgrade head
+```
+
+Add a revision after changing a model:
+
+```
+pdm run alembic revision --autogenerate -m "add thing"
+```
+
+Read the generated file under `migrations/versions/` before committing it,
+then check that it rolls back and re-applies:
+
+```
+pdm run alembic downgrade base && pdm run alembic upgrade head
+```
+
+`alembic.ini` leaves `sqlalchemy.url` empty on purpose; `env.py` sets it
+from `Settings().database_url`, so no connection string is committed and
+`JUICEBOX_DATABASE_URL` steers migrations the same way it steers the app.
+
+Two schema conventions are load-bearing and apply to every table added
+later:
+
+- Timestamps are `mapped_column(DateTime(timezone=True), ...)`. A bare
+  `Mapped[datetime]` produces `TIMESTAMP WITHOUT TIME ZONE`, silently.
+  `created_at` and `updated_at` carry `server_default=func.now()`, and
+  `updated_at` adds `onupdate=func.now()`; `started_at` and `finished_at`
+  record events that may not have happened and stay null until they do.
+- Status columns are `String` with a Python enum supplying the values and
+  a `CHECK` constraint built by `status_check()`, never `sa.Enum` and
+  never a native PostgreSQL enum type. A native enum type survives
+  `DROP TABLE`, so `downgrade base` followed by `upgrade head` fails with
+  `DuplicateObjectError` and stays failing on the persistent `db-data`
+  volume until the type is dropped by hand.
 
 ## Settings
 

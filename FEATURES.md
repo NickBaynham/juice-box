@@ -20,8 +20,19 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Async SQLAlchemy engine and session factory built from `Settings().database_url`.
 - `session_scope()` context manager committing on success and rolling back
   and re-raising on error.
-- Integration test harness that truncates every table before each test.
-  Inert until migrations and models land in the next increment.
+- Integration test harness that brings the database to the latest Alembic
+  migration once per session and truncates every table before each test.
+- Alembic migrations under `migrations/`, configured for the async engine
+  and reading the database URL from `Settings().database_url`.
+- `agent` table storing an agent's definition, objective, repository URL,
+  base and work branches, lifecycle status, failure reason, and creation,
+  update, start, and finish timestamps.
+- `run` table storing one numbered attempt at an agent's objective, with
+  its status, iteration count, current task, resume checkpoint, failure
+  reason, and timestamps. Attempts are unique per agent and cascade when
+  the agent is deleted.
+- `AgentStatus` and `RunStatus` enums holding the specification's
+  lifecycle states, enforced in the database by CHECK constraints.
 
 ## Configuration
 

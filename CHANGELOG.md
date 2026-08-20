@@ -21,10 +21,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   connections cannot outlive a test's event loop.
 - `session_scope()` context manager that commits on a clean exit and rolls
   back and re-raises on error.
+- Alembic migrations (`alembic.ini`, `migrations/`) configured for the
+  async engine, taking the database URL from `Settings().database_url` so
+  no connection string is committed. `pdm run alembic upgrade head`
+  creates the schema.
+- `agent` and `run` tables (`juicebox.persistence.models`): an agent
+  carries its definition, objective, repository details, lifecycle status,
+  and timestamps; a run is one numbered attempt at that objective, unique
+  per `(agent_id, attempt)`, cascading on agent delete, and carrying the
+  checkpoint specification section 12 requires.
+- `AgentStatus` and `RunStatus` enums supplying the specification's
+  lifecycle states, enforced in the database by CHECK constraints rather
+  than native PostgreSQL enum types.
 - Integration test harness (`tests/integration/conftest.py`) that brings
   the database to the latest migration and truncates every table before
-  each test, tolerating the absence of migrations and models until they
-  land.
+  each test.
 - `make test-integration` Make target that starts the database via Compose
   and runs the `integration`-marked test suite.
 - pdm project skeleton with the `juicebox` package and a version smoke test.

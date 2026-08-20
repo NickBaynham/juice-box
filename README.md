@@ -37,6 +37,7 @@ tests, and the full settings reference.
 | Path | Contents |
 | --- | --- |
 | `src/juicebox/` | Application package |
+| `migrations/` | Alembic environment and revisions |
 | `tests/unit/` | Unit tests |
 | `docs/specs/` | Specification |
 | `.dev-commander/` | Designs, ADRs, plans, and reviews |
