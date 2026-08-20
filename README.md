@@ -22,6 +22,7 @@ what is planned.
 make install
 make lint
 make test
+make test-integration
 make build
 make run
 ```

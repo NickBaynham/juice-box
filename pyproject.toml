@@ -7,6 +7,8 @@ dependencies = [
     "fastapi>=0.115",
     "pydantic-settings>=2.6",
     "uvicorn[standard]>=0.32",
+    "asyncpg>=0.30",
+    "sqlalchemy[asyncio]>=2.0",
 ]
 
 [build-system]
@@ -25,7 +27,6 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
     "httpx>=0.27",
-    "asyncpg>=0.30",
 ]
 
 [tool.pytest.ini_options]

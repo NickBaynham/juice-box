@@ -15,6 +15,14 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - Development guide (`docs/development.md`) covering setup, every Make
   target, running the API, and the settings reference.
 
+## Persistence
+
+- Async SQLAlchemy engine and session factory built from `Settings().database_url`.
+- `session_scope()` context manager committing on success and rolling back
+  and re-raising on error.
+- Integration test harness that truncates every table before each test.
+  Inert until migrations and models land in the next increment.
+
 ## Configuration
 
 - Typed settings for API host, API port, log level, and database URL, read

@@ -30,6 +30,7 @@ httpx, asyncpg).
 | `install` | `pdm install` | Install dependencies |
 | `lint` | `pdm run ruff check .` | Run the linter |
 | `test` | `docker compose up -d --wait db`, then `pdm run pytest -m "not integration"` | Start the database and run unit tests |
+| `test-integration` | `docker compose up -d --wait db`, then `pdm run pytest -m integration` | Start the database and run integration tests |
 | `build` | `pdm build` | Build the distribution |
 | `run` | `docker compose up -d --build` | Build and start the full stack (API and database) |
 
@@ -75,11 +76,21 @@ Tests are split by the `integration` pytest marker (declared in
   first increment that needs it, so the test target always brings the
   database up), then runs `pdm run pytest -m "not integration"`. None of
   the current unit tests touch the database directly.
-- Integration tests: `pdm run pytest -m integration`. Requires Docker;
-  it builds the container image, runs it publishing host port 8001, and
-  polls `http://localhost:8001/health`, and separately opens a direct
-  `asyncpg` connection to the `db` Compose service on port 5432.
-- Both: `make test && pdm run pytest -m integration`.
+- Integration tests only: `make test-integration`. This also starts the
+  `db` Compose service, then runs `pdm run pytest -m integration`, which
+  builds the container image, runs it publishing host port 8001 and polls
+  `http://localhost:8001/health`, and separately opens sessions against
+  the `db` Compose service through `juicebox.persistence.session_scope`
+  as well as a direct `asyncpg` connection.
+- Both: `make test && make test-integration`.
+
+`tests/integration/conftest.py` provides two autouse fixtures shared by
+every integration test that needs the schema: a session-scoped fixture
+that brings the database to the latest Alembic migration, and a
+function-scoped fixture that truncates every table in `Base.metadata`
+before each test so leftover rows on the persistent `db-data` volume
+cannot leak between test runs. Both are no-ops until a later increment
+adds `alembic.ini` and `juicebox.persistence.models`.
 
 ## Settings
 

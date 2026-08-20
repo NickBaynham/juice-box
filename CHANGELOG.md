@@ -16,6 +16,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Async SQLAlchemy engine and session factory (`juicebox.persistence`),
+  built from `Settings().database_url` with a `NullPool` engine so pooled
+  connections cannot outlive a test's event loop.
+- `session_scope()` context manager that commits on a clean exit and rolls
+  back and re-raises on error.
+- Integration test harness (`tests/integration/conftest.py`) that brings
+  the database to the latest migration and truncates every table before
+  each test, tolerating the absence of migrations and models until they
+  land.
+- `make test-integration` Make target that starts the database via Compose
+  and runs the `integration`-marked test suite.
 - pdm project skeleton with the `juicebox` package and a version smoke test.
 - Make targets for `help`, `install`, `lint`, `test`, `build`, and `run`.
 - Documentation set: README, changelog, feature list, and to do list.

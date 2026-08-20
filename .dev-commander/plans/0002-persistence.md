@@ -54,7 +54,7 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
 
 ### 1. Async engine, session factory, and the integration test harness
 
-- [ ] Open and close async sessions against the configured database, and
+- [x] Open and close async sessions against the configured database, and
       give every later increment an isolated database to test against.
 
 Files: `src/juicebox/persistence/__init__.py`,
