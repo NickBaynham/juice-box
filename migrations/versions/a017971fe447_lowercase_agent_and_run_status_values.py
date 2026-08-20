@@ -16,9 +16,9 @@ branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
 AGENT_STATUSES_UPPER = "'CREATED', 'STARTING', 'RUNNING', 'PAUSED', 'WAITING', 'COMPLETED', 'FAILED', 'STOPPED'"
-AGENT_STATUSES_LOWER = "'created', 'starting', 'running', 'paused', 'waiting', 'completed', 'failed', 'stopped'"
+AGENT_STATUSES_LOWER = AGENT_STATUSES_UPPER.lower()
 RUN_STATUSES_UPPER = "'STARTING', 'RUNNING', 'PAUSED', 'WAITING', 'COMPLETED', 'FAILED', 'STOPPED'"
-RUN_STATUSES_LOWER = "'starting', 'running', 'paused', 'waiting', 'completed', 'failed', 'stopped'"
+RUN_STATUSES_LOWER = RUN_STATUSES_UPPER.lower()
 
 
 def upgrade() -> None:

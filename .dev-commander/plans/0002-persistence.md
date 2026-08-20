@@ -367,7 +367,13 @@ Commit: `Add task, message, event, and iteration repositories`
 Files: `docs/persistence.md`, `README.md`, `CHANGELOG.md`, `FEATURES.md`,
 `TODO.md`, `tests/unit/test_query_locality.py`
 
-Failing test first: a unit test asserting no module under `src/juicebox`
+Failing test first: an integration test proving a data migration is
+data-correct, not merely schema-correct. Every table is empty during a
+normal run, so a migration's `UPDATE` statements are exercised by nothing:
+deleting both `UPDATE` lines from the lowercase-status migration was proven
+during review to leave the whole suite green. The test seeds rows through
+raw SQL at the prior revision, upgrades, and asserts the data moved. Plus a
+unit test asserting no module under `src/juicebox`
 outside `persistence/` contains `select(` or `session.execute`. This is
 the executable form of the exit criterion below, which nothing otherwise
 enforces, and it will catch W2 through W4 regressions rather than only
