@@ -41,6 +41,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `AgentStatus` and `RunStatus` enums supplying the specification's
   lifecycle states, enforced in the database by CHECK constraints rather
   than native PostgreSQL enum types.
+- `task` table (`juicebox.persistence.models`): one node in the task
+  graph an agent decomposes its objective into, carrying its title,
+  status, priority, dependency ids as `JSONB`, attempt count, result,
+  error, and timestamps, cascading on both agent and run delete.
+  `TaskStatus` and `TaskPriority` enums, also CHECK-constrained rather
+  than native enums; `TaskStatus` follows specification section 11's
+  lowercase rendering of task states, distinct from the uppercase agent
+  lifecycle of section 6.
 - Integration test harness (`tests/integration/conftest.py`) that brings
   the database to the latest migration and truncates every table before
   each test.

@@ -1,4 +1,4 @@
-"""Declarative base, lifecycle status enums, and the agent and run tables."""
+"""Declarative base, lifecycle status enums, and the agent, run, and task tables."""
 
 import uuid
 from datetime import datetime
@@ -37,6 +37,28 @@ class RunStatus(StrEnum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     STOPPED = "STOPPED"
+
+
+class TaskStatus(StrEnum):
+    """The task states of specification section 11, which renders them
+    lowercase, unlike section 6's uppercase agent lifecycle."""
+
+    PENDING = "pending"
+    READY = "ready"
+    RUNNING = "running"
+    BLOCKED = "blocked"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class TaskPriority(StrEnum):
+    """A task's scheduling priority."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 def status_check(column: str, statuses: type[StrEnum], name: str) -> CheckConstraint:
@@ -110,3 +132,30 @@ class Run(Base):
     finished_at: Mapped[OptionalAt]
     created_at: Mapped[CreatedAt]
     updated_at: Mapped[UpdatedAt]
+
+
+class Task(Base):
+    """One node in the task graph an agent decomposes its objective into."""
+
+    __tablename__ = "task"
+    __table_args__ = (
+        status_check("status", TaskStatus, "ck_task_status"),
+        status_check("priority", TaskPriority, "ck_task_priority"),
+    )
+
+    id: Mapped[UuidPk]
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agent.id", ondelete="CASCADE")
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
+    title: Mapped[str]
+    status: Mapped[str] = mapped_column(default=TaskStatus.PENDING.value)
+    priority: Mapped[str]
+    dependencies: Mapped[list[str]] = mapped_column(JSONB)
+    attempts: Mapped[int] = mapped_column(default=0)
+    result: Mapped[Json | None]
+    error: Mapped[str | None]
+    created_at: Mapped[CreatedAt]
+    updated_at: Mapped[UpdatedAt]
+    started_at: Mapped[OptionalAt]
+    finished_at: Mapped[OptionalAt]

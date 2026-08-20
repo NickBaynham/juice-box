@@ -222,7 +222,7 @@ Commit: `Ship migrations in the container image`
 
 ### 4. Task model
 
-- [ ] Store the task graph an agent decomposes its objective into.
+- [x] Store the task graph an agent decomposes its objective into.
 
 Files: `src/juicebox/persistence/models.py`,
 `migrations/versions/<hash>_add_task.py`,

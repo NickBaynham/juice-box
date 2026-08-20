@@ -33,6 +33,13 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   the agent is deleted.
 - `AgentStatus` and `RunStatus` enums holding the specification's
   lifecycle states, enforced in the database by CHECK constraints.
+- `task` table storing one node of the task graph an agent decomposes its
+  objective into: title, status, priority, dependency ids, attempt count,
+  result, error, and timestamps. Cascades when its agent or run is
+  deleted.
+- `TaskStatus` and `TaskPriority` enums, enforced in the database by
+  CHECK constraints. `TaskStatus` holds specification section 11's eight
+  task states in their lowercase form.
 
 ## Configuration
 
