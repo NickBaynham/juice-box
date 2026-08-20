@@ -23,10 +23,15 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
 - Consumes ADR-0001 (PostgreSQL from the first increment), ADR-0002
   (durable state), ADR-0006 (agent id is the handle, runs are attempts).
 - Every table has `created_at`. Mutable tables also have `updated_at`.
-  Every timestamp column is
-  `mapped_column(DateTime(timezone=True), server_default=func.now())`, and
-  `updated_at` adds `onupdate=func.now()`. A bare `Mapped[datetime]`
-  produces `TIMESTAMP WITHOUT TIME ZONE` and silently violates this.
+  Every timestamp column is `DateTime(timezone=True)`; a bare
+  `Mapped[datetime]` produces `TIMESTAMP WITHOUT TIME ZONE` and silently
+  violates this. `created_at` and `updated_at` additionally carry
+  `server_default=func.now()`, and `updated_at` adds `onupdate=func.now()`.
+  Columns recording that something happened, such as `started_at` and
+  `finished_at`, are nullable and carry no default: defaulting them would
+  stamp a row as started at creation while it is still `CREATED`, which
+  makes the first transition unobservable and corrupts the duration
+  figures W10's report is built from.
 - Primary keys are `uuid4` UUID columns. Structured columns are `JSONB`.
 - Status and type columns are `String` with a Python enum supplying the
   values and a `CHECK` constraint, not PostgreSQL native enum types.
