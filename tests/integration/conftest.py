@@ -1,5 +1,6 @@
 """Shared fixtures for integration tests: schema at head, isolated rows."""
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,10 @@ from juicebox.persistence.database import session_scope
 from juicebox.persistence.models import Base
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
+APPLICATION_TABLES = text(
+    "SELECT table_name FROM information_schema.tables "
+    "WHERE table_schema = 'public' AND table_name <> 'alembic_version'"
+)
 
 
 def _config() -> Config:
@@ -27,6 +32,26 @@ def schema_at_head():
 def alembic_config() -> Config:
     """Alembic configuration for tests that drive migrations themselves."""
     return _config()
+
+
+@pytest.fixture
+def application_tables():
+    """Query selecting every application table name, excluding `alembic_version`."""
+    return APPLICATION_TABLES
+
+
+@pytest.fixture
+def run_query():
+    """Run a read-only statement on a fresh event loop and return its column."""
+
+    def _run(statement) -> list:
+        async def query():
+            async with session_scope() as session:
+                return list(await session.scalars(statement))
+
+        return asyncio.run(query())
+
+    return _run
 
 
 @pytest.fixture(autouse=True)
