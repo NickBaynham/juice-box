@@ -14,6 +14,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `.env` file, so the tests asserting defaults no longer depend on the
   environment they run in.
 
+### Changed
+
+- `AgentStatus` and `RunStatus` values are now lowercase (`"created"`,
+  `"running"`, ...), matching `TaskStatus` and `TaskPriority`, so every
+  entity stores status and type values the same way. Enum member names
+  stay uppercase Python identifiers. Specification section 11 shows task
+  status in a literal JSON payload example; section 6 renders the agent
+  lifecycle only as an uppercase ASCII diagram that never appears in an
+  API payload, so the lowercase reading is better evidenced. A hand-written
+  migration (`a017971fe447`) drops and recreates the `ck_agent_status` and
+  `ck_run_status` CHECK constraints and lowercases existing `agent` and
+  `run` rows' `status` values; `downgrade()` reverses both steps.
+
 ### Added
 
 - Async SQLAlchemy engine and session factory (`juicebox.persistence`),
@@ -46,9 +59,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   status, priority, dependency ids as `JSONB`, attempt count, result,
   error, and timestamps, cascading on both agent and run delete.
   `TaskStatus` and `TaskPriority` enums, also CHECK-constrained rather
-  than native enums; `TaskStatus` follows specification section 11's
-  lowercase rendering of task states, distinct from the uppercase agent
-  lifecycle of section 6.
+  than native enums, following specification section 11's lowercase
+  rendering of task states.
 - Integration test harness (`tests/integration/conftest.py`) that brings
   the database to the latest migration and truncates every table before
   each test.

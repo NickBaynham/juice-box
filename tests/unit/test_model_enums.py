@@ -3,7 +3,9 @@
 from juicebox.persistence.models import AgentStatus, RunStatus, TaskPriority, TaskStatus
 
 # Specification section 6, the agent lifecycle, verbatim and in order.
-SECTION_6_STATES = [
+# Member names stay uppercase Python identifiers; stored values are
+# lowercase like every other status column.
+SECTION_6_NAMES = [
     "CREATED",
     "STARTING",
     "RUNNING",
@@ -13,23 +15,22 @@ SECTION_6_STATES = [
     "FAILED",
     "STOPPED",
 ]
+SECTION_6_VALUES = [name.lower() for name in SECTION_6_NAMES]
 
 
 def test_agent_status_holds_the_section_6_states():
-    assert [member.name for member in AgentStatus] == SECTION_6_STATES
-    assert [member.value for member in AgentStatus] == SECTION_6_STATES
+    assert [member.name for member in AgentStatus] == SECTION_6_NAMES
+    assert [member.value for member in AgentStatus] == SECTION_6_VALUES
 
 
 def test_run_status_holds_every_agent_state_except_created():
-    expected = [state for state in SECTION_6_STATES if state != "CREATED"]
-    assert [member.name for member in RunStatus] == expected
-    assert [member.value for member in RunStatus] == expected
+    expected_names = [name for name in SECTION_6_NAMES if name != "CREATED"]
+    expected_values = [name.lower() for name in expected_names]
+    assert [member.name for member in RunStatus] == expected_names
+    assert [member.value for member in RunStatus] == expected_values
 
 
-# Specification section 11, task management, verbatim and in order. Section
-# 11 renders task states lowercase, unlike section 6's uppercase agent
-# lifecycle, so TaskStatus follows suit rather than inventing a third
-# convention.
+# Specification section 11, task management, verbatim and in order.
 SECTION_11_STATES = [
     "pending",
     "ready",

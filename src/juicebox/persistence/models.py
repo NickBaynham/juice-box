@@ -15,33 +15,35 @@ class Base(DeclarativeBase):
 
 
 class AgentStatus(StrEnum):
-    """The agent lifecycle states of specification section 6."""
+    """The agent lifecycle states of specification section 6, stored
+    lowercase like every other status column even though section 6's
+    ASCII diagram renders them uppercase; that diagram never appears in
+    an API payload, unlike section 11's task JSON example."""
 
-    CREATED = "CREATED"
-    STARTING = "STARTING"
-    RUNNING = "RUNNING"
-    PAUSED = "PAUSED"
-    WAITING = "WAITING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    STOPPED = "STOPPED"
+    CREATED = "created"
+    STARTING = "starting"
+    RUNNING = "running"
+    PAUSED = "paused"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    STOPPED = "stopped"
 
 
 class RunStatus(StrEnum):
     """The states one run attempt can occupy; a run is never CREATED."""
 
-    STARTING = "STARTING"
-    RUNNING = "RUNNING"
-    PAUSED = "PAUSED"
-    WAITING = "WAITING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    STOPPED = "STOPPED"
+    STARTING = "starting"
+    RUNNING = "running"
+    PAUSED = "paused"
+    WAITING = "waiting"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    STOPPED = "stopped"
 
 
 class TaskStatus(StrEnum):
-    """The task states of specification section 11, which renders them
-    lowercase, unlike section 6's uppercase agent lifecycle."""
+    """The task states of specification section 11."""
 
     PENDING = "pending"
     READY = "ready"

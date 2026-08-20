@@ -39,6 +39,12 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
   `upgrade head` fails with `DuplicateObjectError`, which on a persistent
   `db-data` volume poisons the developer's database until they drop the
   type by hand. Proven during the pre-flight scan of this plan.
+- Status and type column VALUES are lowercase across every entity; enum
+  member names stay uppercase Python identifiers. Specification section
+  11 shows task status in a literal JSON payload example, while section
+  6 renders the agent lifecycle only as an uppercase ASCII diagram that
+  never appears in an API payload, so the lowercase reading is better
+  evidenced.
 - Every entity table carries both `agent_id` and `run_id`, per ADR-0006,
   so run-scoped endpoints can be added later without a migration.
 - Model tests are integration tests and run against Compose PostgreSQL.
