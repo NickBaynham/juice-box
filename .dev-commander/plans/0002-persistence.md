@@ -194,7 +194,7 @@ Commit: `Wire Alembic and add agent and run models`
 
 ### 3. Migrations in the container image
 
-- [ ] Ship an image that can apply its own migrations.
+- [x] Ship an image that can apply its own migrations.
 
 Files: `Dockerfile`, `docker-compose.yml`, `Makefile`,
 `tests/integration/test_container_migrations.py`

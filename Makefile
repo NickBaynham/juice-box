@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install lint test test-integration build run
+.PHONY: help install lint test test-integration build run migrate
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "%-18s %s\n", $$1, $$2}'
@@ -24,3 +24,7 @@ build: ## Build the distribution
 
 run: ## Build and start the Compose stack
 	docker compose up -d --build
+
+migrate: ## Apply pending Alembic migrations to the Compose database
+	docker compose up -d --wait db
+	docker compose run --rm api pdm run alembic upgrade head

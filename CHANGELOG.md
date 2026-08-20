@@ -25,6 +25,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   async engine, taking the database URL from `Settings().database_url` so
   no connection string is committed. `pdm run alembic upgrade head`
   creates the schema.
+- Container image ships its own `alembic.ini` and `migrations/`
+  alongside `src/`, and the `Dockerfile` installs dependencies
+  (`pdm install --prod --no-self`) before copying source and migrations
+  and installing the project (`pdm install --prod --no-editable`), so
+  editing source no longer invalidates the dependency layer.
+- `make migrate` Make target applying pending Alembic migrations to the
+  Compose database by running `pdm run alembic upgrade head` inside a
+  one-off `api` container.
 - `agent` and `run` tables (`juicebox.persistence.models`): an agent
   carries its definition, objective, repository details, lifecycle status,
   and timestamps; a run is one numbered attempt at that objective, unique

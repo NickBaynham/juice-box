@@ -50,6 +50,15 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 
 - A `python:3.12-slim` based image installs the project with pdm and serves
   the API through `python -m juicebox`, exposing port 8000.
+- The image carries its own `alembic.ini` and `migrations/`, so it can
+  apply its own schema without a host pdm environment. Dependencies are
+  installed in a separate layer (`pdm install --prod --no-self`) before
+  source and migrations are copied in and the project itself is installed
+  (`pdm install --prod --no-editable`), so a source edit no longer
+  invalidates the dependency layer.
+- `make migrate` applies pending Alembic migrations to the Compose
+  database by running `pdm run alembic upgrade head` inside a one-off
+  `api` container.
 
 ## Compose services
 

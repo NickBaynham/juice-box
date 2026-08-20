@@ -25,9 +25,12 @@ make test
 make test-integration
 make build
 make run
+make migrate
 ```
 
-`make run` serves `GET /health` on `localhost:8000`. See
+`make run` serves `GET /health` on `localhost:8000`. `make migrate` applies
+pending Alembic migrations to the Compose database; the container image
+carries its own `alembic.ini` and `migrations/`. See
 [docs/development.md](docs/development.md) for prerequisites, every Make
 target, running the API with and without Docker, unit versus integration
 tests, and the full settings reference.

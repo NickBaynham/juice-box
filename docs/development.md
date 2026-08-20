@@ -34,6 +34,7 @@ group (ruff, pytest, pytest-asyncio, httpx).
 | `test-integration` | `docker compose up -d --wait db`, then `pdm run pytest -m integration` | Start the database and run integration tests |
 | `build` | `pdm build` | Build the distribution |
 | `run` | `docker compose up -d --build` | Build and start the full stack (API and database) |
+| `migrate` | `docker compose up -d --wait db`, then `docker compose run --rm api pdm run alembic upgrade head` | Apply pending Alembic migrations to the Compose database |
 
 ## Running the API
 
@@ -125,6 +126,18 @@ pdm run alembic downgrade base && pdm run alembic upgrade head
 from `Settings().database_url`, so no connection string is committed and
 `JUICEBOX_DATABASE_URL` steers migrations the same way it steers the app.
 
+The container image carries its own `alembic.ini` and `migrations/`
+alongside `src/`, so it can apply its own schema without a host pdm
+environment. Against the Compose stack:
+
+```
+make migrate
+```
+
+This runs `pdm run alembic upgrade head` inside a one-off `api` container,
+which reaches `db` by Compose service name using the same
+`JUICEBOX_DATABASE_URL` the `api` service is configured with.
+
 Two schema conventions are load-bearing and apply to every table added
 later:
 
@@ -160,9 +173,6 @@ the `db` service by its Compose service name rather than `localhost`.
 
 ## Known deviations from the plan
 
-- The `Dockerfile` copies `src/` before running `pdm install`, not
-  after. The project builds as a real package (`[tool.pdm] distribution
-  = true`), so `pdm install` needs the source present to install it.
 - The CI workflow (`.github/workflows/ci.yml`) was generated from the
   dev-commander plugin's local template cache rather than from a
   `templates/ci/github/python/ci.yml.tmpl` path inside this repository;
