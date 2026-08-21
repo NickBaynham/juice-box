@@ -283,7 +283,7 @@ Commit: `Add model, prompt, skill, and secret validation`
 
 ### 3. Runtime and permissions
 
-- [ ] Validate the runtime envelope and the permission block ADR-0004
+- [x] Validate the runtime envelope and the permission block ADR-0004
       enforces.
 
 Files: `src/juicebox/schemas/agent.py`,

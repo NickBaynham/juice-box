@@ -109,6 +109,18 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   `^[a-z0-9][a-z0-9-]*$` slug pattern, checking that a secret is
   referenced by name rather than embedded — not that the name is free of
   credential-shaped text, which gitleaks already checks in CI.
+- `AgentDefinition.runtime` (optional `Runtime`) and `.permissions`
+  (`Permissions`, always present) validate the `runtime:` and
+  `permissions:` blocks of section 8. `Runtime.memory` and `.timeout` are
+  unit strings (`4Gi`, `8h`) validated against `^(\d+)(Ki|Mi|Gi|Ti)$` and
+  `^(\d+)(s|m|h)$`; `.memory_bytes` and `.timeout_delta` convert them to an
+  `int` and a `timedelta` through a plain `@property`, so they never
+  appear in `model_dump()` and a dumped `Runtime` still re-validates.
+  `Permissions` defaults to least privilege — `filesystem: read-only`,
+  `network: false`, `shell: false` — as a default instance, so an agent
+  definition that omits `permissions:` is never treated as unrestricted,
+  per ADR-0004. `FilesystemAccess` is a `StrEnum` (`read-only`,
+  `read-write`) per ADR-0009.
 
 ## Configuration
 

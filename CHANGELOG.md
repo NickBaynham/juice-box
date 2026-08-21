@@ -48,6 +48,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   its index. The pattern checks that a secret is referenced by name, not
   that a name is credential-free — detecting leaked credentials is the
   gitleaks step CI already runs.
+- `Runtime` and `Permissions`, the `runtime:` and `permissions:` blocks of
+  specification section 8, wired onto `AgentDefinition` as `runtime:
+  Runtime | None = None` and `permissions: Permissions = Permissions()`.
+  `runtime.memory` and `runtime.timeout` are strings validated against
+  `^(\d+)(Ki|Mi|Gi|Ti)$` and `^(\d+)(s|m|h)$`, converted to `memory_bytes`
+  and `timeout_delta` through plain `@property`, not `@computed_field`, so
+  neither appears in `model_dump()` and a dumped `Runtime` still
+  re-validates under `extra="forbid"` — the round trip W3 needs when
+  reading a definition back out of JSONB. `Permissions` defaults to least
+  privilege (`filesystem: read-only`, `network: false`, `shell: false`) as
+  a default *instance* rather than `None`, per ADR-0004: an omitted block
+  must not grant more access than a present one, so `permissions` is never
+  absent on a validated `AgentDefinition`. `FilesystemAccess` is a
+  `StrEnum` with lowercase values (`read-only`, `read-write`) per
+  ADR-0009.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a
