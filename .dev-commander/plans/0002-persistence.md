@@ -301,7 +301,12 @@ Minimal implementation: `Artifact` with `id`, `agent_id`, `run_id`,
 `IterationRecord` with `id`, `agent_id`, `run_id`, `iteration`,
 `task_id`, `action`, `command`, `result`, `next_action`, `model`,
 `input_tokens`, `output_tokens`, `cost_usd`, `created_at`, and a unique
-constraint on `(run_id, iteration)`. `agent_id` is required by ADR-0006
+constraint on `(run_id, iteration)`. Also add the `(agent_id, seq)` index
+to `message` in this increment's migration: increment 5 gave that index to
+`event` only, because the plan asked for it only there, but increment 8's
+`MessageRepository.list_unconsumed` filters by agent and orders by `seq`
+and would sequential-scan without it. Folding it in here avoids a
+migration that exists solely to add one index. `agent_id` is required by ADR-0006
 like every other entity table. `model` and `cost_usd` are what section
 18's minimum metrics require; token counts alone cannot produce an
 estimated cost.

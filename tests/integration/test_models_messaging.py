@@ -159,3 +159,35 @@ async def test_deleting_the_parent_run_deletes_the_message_and_event():
     async with session_scope() as session:
         assert await session.get(Message, message_id) is None
         assert await session.get(Event, event_id) is None
+
+
+@pytest.mark.integration
+async def test_seq_is_assigned_automatically_and_increases():
+    """seq must auto-assign monotonically: W4 and W10 page on it as a cursor.
+
+    Every other test sets seq by hand to force a divergence from created_at,
+    so without this one a column that never incremented would still pass.
+    """
+    agent, run = await _agent_and_run()
+
+    for index in range(3):
+        async with session_scope() as session:
+            session.add(
+                Event(
+                    agent_id=agent.id,
+                    run_id=run.id,
+                    name=f"event-{index}",
+                    payload={"index": index},
+                )
+            )
+
+    async with session_scope() as session:
+        assigned = (
+            await session.scalars(
+                select(Event.seq).where(Event.agent_id == agent.id).order_by(Event.name)
+            )
+        ).all()
+
+    assert all(value is not None for value in assigned)
+    assert assigned == sorted(assigned)
+    assert len(set(assigned)) == 3
