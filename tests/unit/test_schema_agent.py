@@ -41,3 +41,14 @@ def test_rejects_a_secret_name_that_is_not_a_slug():
     with pytest.raises(ValidationError) as caught:
         load_agent_definition(MINIMAL + "secrets:\n  - Github_Token\n")
     assert caught.value.errors()[0]["loc"] == ("secrets", 0)
+
+
+def test_rejects_a_skill_name_that_is_not_a_slug():
+    """A skill name becomes a directory lookup in W7, per ADR-0007.
+
+    Every other identifier in this document carries the same grammar, and
+    an unconstrained string would hand W7 a path to resolve.
+    """
+    with pytest.raises(ValidationError) as caught:
+        load_agent_definition(MINIMAL + "skills:\n  - ../../etc\n")
+    assert caught.value.errors()[0]["loc"] == ("skills", 0)

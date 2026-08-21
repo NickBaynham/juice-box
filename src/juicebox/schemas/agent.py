@@ -6,7 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_vali
 
 NAME_PATTERN = r"^[a-z0-9][a-z0-9-]*$"
 
-SecretName = Annotated[str, StringConstraints(pattern=NAME_PATTERN)]
+# Skill and secret names are both identifiers something later resolves: a
+# skill becomes a directory lookup in W7, a secret a lookup in a backend.
+SlugName = Annotated[str, StringConstraints(pattern=NAME_PATTERN)]
 
 
 class Metadata(BaseModel):
@@ -56,5 +58,5 @@ class AgentDefinition(BaseModel):
     kind: Literal["Agent"]
     metadata: Metadata
     agent: AgentSpec
-    skills: list[str] = []
-    secrets: list[SecretName] = []
+    skills: list[SlugName] = []
+    secrets: list[SlugName] = []
