@@ -38,6 +38,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   async engine, taking the database URL from `Settings().database_url` so
   no connection string is committed. `pdm run alembic upgrade head`
   creates the schema.
+- `message` and `event` tables storing messages sent to a running agent
+  and events it emits. Both carry a monotonic `seq` identity column,
+  which orders them deterministically even when several rows share a
+  transaction-scoped `created_at`, and is the cursor W4 and W10 will page
+  on. `event` additionally has an index on `(agent_id, seq)`. Both cascade
+  when their agent or run is deleted.
+- `MessageType` enum holding specification section 7's seven wire-form
+  message types, enforced in the database by a CHECK constraint.
 - Container image ships its own `alembic.ini` and `migrations/`
   alongside `src/`, and the `Dockerfile` installs dependencies
   (`pdm install --prod --no-self`) before copying source and migrations

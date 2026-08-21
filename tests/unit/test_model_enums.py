@@ -1,6 +1,12 @@
 """Unit tests pinning the status enums to the specification's state lists."""
 
-from juicebox.persistence.models import AgentStatus, RunStatus, TaskPriority, TaskStatus
+from juicebox.persistence.models import (
+    AgentStatus,
+    MessageType,
+    RunStatus,
+    TaskPriority,
+    TaskStatus,
+)
 
 # Specification section 6, the agent lifecycle, verbatim and in order.
 # Member names stay uppercase Python identifiers; stored values are
@@ -49,3 +55,21 @@ def test_task_status_holds_the_section_11_states():
 
 def test_task_priority_holds_low_medium_high():
     assert [member.value for member in TaskPriority] == ["low", "medium", "high"]
+
+
+# Specification section 7, running agent interaction, verbatim and in order.
+# Three values contain hyphens and are not valid Python identifiers, so
+# those members are named PRIORITY_CHANGE, CANCEL_TASK, and NEW_TASK.
+SECTION_7_VALUES = [
+    "instruction",
+    "question",
+    "context",
+    "priority-change",
+    "cancel-task",
+    "new-task",
+    "approval",
+]
+
+
+def test_message_type_holds_the_section_7_wire_forms():
+    assert [member.value for member in MessageType] == SECTION_7_VALUES

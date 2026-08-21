@@ -40,6 +40,18 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - `TaskStatus` and `TaskPriority` enums, enforced in the database by
   CHECK constraints. `TaskStatus` holds specification section 11's eight
   task states in their lowercase form.
+- `message` table storing one message sent to a running agent: type, body,
+  and creation, update, and consumption timestamps. Cascades when its
+  agent or run is deleted.
+- `event` table storing one append-only event an agent emits while
+  running: name, payload, and creation timestamp. Cascades when its agent
+  or run is deleted, and carries an index on `(agent_id, seq)` for paged
+  reads.
+- `MessageType` enum holding specification section 7's seven wire-form
+  message types, enforced in the database by a CHECK constraint.
+- `seq`, a monotonic `BIGSERIAL`-equivalent identity column on `message`
+  and `event`, giving deterministic ordering independent of `created_at`
+  and serving as the cursor for future paged reads.
 
 ## Configuration
 

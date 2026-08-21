@@ -252,7 +252,7 @@ Commit: `Add task model`
 
 ### 5. Message and Event models
 
-- [ ] Store messages sent to a running agent and events it emits.
+- [x] Store messages sent to a running agent and events it emits.
 
 Files: `src/juicebox/persistence/models.py`,
 `migrations/versions/<hash>_add_message_and_event.py`,

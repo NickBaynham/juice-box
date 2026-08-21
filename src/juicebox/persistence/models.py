@@ -1,11 +1,21 @@
-"""Declarative base, lifecycle status enums, and the agent, run, and task tables."""
+"""Declarative base, lifecycle status enums, and the agent, run, task,
+message, and event tables."""
 
 import uuid
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Index,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -63,6 +73,22 @@ class TaskPriority(StrEnum):
     HIGH = "high"
 
 
+class MessageType(StrEnum):
+    """The section 7 message types a running agent accepts.
+
+    Three wire forms contain hyphens and are not valid Python identifiers,
+    so those members are named PRIORITY_CHANGE, CANCEL_TASK, and NEW_TASK.
+    """
+
+    INSTRUCTION = "instruction"
+    QUESTION = "question"
+    CONTEXT = "context"
+    PRIORITY_CHANGE = "priority-change"
+    CANCEL_TASK = "cancel-task"
+    NEW_TASK = "new-task"
+    APPROVAL = "approval"
+
+
 def status_check(column: str, statuses: type[StrEnum], name: str) -> CheckConstraint:
     """Return a CHECK constraint restricting `column` to `statuses`' values.
 
@@ -88,6 +114,10 @@ UpdatedAt = Annotated[
 # they are nullable and carry no default.
 OptionalAt = Annotated[datetime | None, mapped_column(DateTime(timezone=True))]
 Json = Annotated[dict[str, Any], mapped_column(JSONB)]
+# A monotonic identity column: now() is transaction-scoped, so rows written
+# in one transaction share a created_at and cannot be ordered by it. seq
+# gives deterministic ordering and is the cursor W4 and W10 page on.
+Seq = Annotated[int, mapped_column(BigInteger, Identity(), nullable=False, unique=True)]
 
 
 class Agent(Base):
@@ -161,3 +191,39 @@ class Task(Base):
     updated_at: Mapped[UpdatedAt]
     started_at: Mapped[OptionalAt]
     finished_at: Mapped[OptionalAt]
+
+
+class Message(Base):
+    """A message sent to a running agent, per specification section 7."""
+
+    __tablename__ = "message"
+    __table_args__ = (status_check("type", MessageType, "ck_message_type"),)
+
+    id: Mapped[UuidPk]
+    seq: Mapped[Seq]
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agent.id", ondelete="CASCADE")
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
+    type: Mapped[str]
+    body: Mapped[Json]
+    created_at: Mapped[CreatedAt]
+    updated_at: Mapped[UpdatedAt]
+    consumed_at: Mapped[OptionalAt]
+
+
+class Event(Base):
+    """An append-only event an agent emits while running."""
+
+    __tablename__ = "event"
+    __table_args__ = (Index("ix_event_agent_id_seq", "agent_id", "seq"),)
+
+    id: Mapped[UuidPk]
+    seq: Mapped[Seq]
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agent.id", ondelete="CASCADE")
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
+    name: Mapped[str]
+    payload: Mapped[Json]
+    created_at: Mapped[CreatedAt]
