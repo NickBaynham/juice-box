@@ -74,8 +74,8 @@ def test_lowercase_status_migration_lowercases_seeded_rows(alembic_config):
     agent_id = uuid.uuid4()
     run_id = uuid.uuid4()
 
-    command.downgrade(alembic_config, PRIOR_REVISION)
     try:
+        command.downgrade(alembic_config, PRIOR_REVISION)
         _write(INSERT_AGENT, id=agent_id)
         _write(INSERT_RUN, id=run_id, agent_id=agent_id)
 
@@ -84,6 +84,13 @@ def test_lowercase_status_migration_lowercases_seeded_rows(alembic_config):
         assert _read_one(SELECT_AGENT_STATUS, id=agent_id) == "running"
         assert _read_one(SELECT_RUN_STATUS, id=run_id) == "running"
     finally:
-        # Every later test file's fixtures assume head; restore it even if
-        # an assertion above failed.
+        # Every later test file's fixtures assume head, and this file sorts
+        # ahead of seven of them, so restore it even if an assertion above
+        # failed or the downgrade itself did.
+        #
+        # The one case this cannot rescue is a migration that is itself
+        # broken: the restore re-runs the same revision and raises again,
+        # leaving the database below head. That is the failure this test
+        # exists to report, and it reports it first, but expect noise from
+        # every file collected after this one.
         command.upgrade(alembic_config, "head")

@@ -1,25 +1,28 @@
 """Unit test enforcing the workstream's exit criterion: the repository
 layer under `persistence/` is the only module issuing queries.
 
-Parses with `ast` rather than scanning source text for the substrings
-`"select("` and `"session.execute"`. A text scan has both failure modes
-this check exists to avoid:
+Parses with `ast` rather than scanning source text. A text scan has both
+failure modes this check exists to avoid:
 
-- False positives: a docstring or comment that merely mentions
-  `select(` or `session.execute` (this very module's docstring, for
-  instance) would trip a substring scan despite issuing no query.
-- False negatives: a text scan only catches the literal spelling it was
-  given. `sqlalchemy.select(...)`, a `select` imported under an alias, or
-  a query issued through a session attribute not literally named
-  `session` (`self.session.execute(...)`, `db_session.execute(...)`) all
-  read differently in source but are exactly the violation this test
-  must catch across W2 through W4, where the convention may be reused on
-  a class rather than a bare parameter.
+- False positives: a docstring or comment mentioning `select(` or
+  `session.execute` -- this module's own docstring, for instance -- trips
+  a substring scan despite issuing no query.
+- False negatives: a text scan catches only the spelling it was given.
+  `sqlalchemy.select(...)`, `from sqlalchemy import select as sel`, and a
+  session reached through an attribute (`self.session.execute(...)`,
+  `db_session.scalars(...)`) all read differently in source and are all
+  the violation this test must catch across W2 through W4.
 
-Structural matching on the call expression -- the final attribute of a
-`select(...)` or `x.select(...)` call, and the base name of an
-`x.execute(...)` call -- catches those variations and ignores comments
-and strings entirely, which is what parsing rather than scanning buys.
+`select` is resolved against each module's own imports rather than
+matched by name, so an aliased import is caught and an unrelated
+`select` -- a `selectors` object, a local helper of the same name -- is
+not. Session calls are matched on the query-issuing methods the
+repository layer actually uses, reached through any name ending in
+`session`.
+
+What it does not catch: a query issued through a name this module cannot
+resolve statically, such as one fetched from a registry at runtime, or a
+raw connection that never passes through a `session`-named binding.
 """
 
 import ast
@@ -27,6 +30,9 @@ from pathlib import Path
 
 SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "juicebox"
 PERSISTENCE_ROOT = SRC_ROOT / "persistence"
+
+# The query-issuing session methods the repository layer uses.
+SESSION_QUERY_METHODS = frozenset({"execute", "scalars", "scalar", "get", "stream"})
 
 
 def _scanned_modules() -> list[Path]:
@@ -57,20 +63,51 @@ def _violations(tree: ast.AST) -> list[tuple[int, str]]:
     `db_session` attribute.
     """
     found = []
+    select_names = _sqlalchemy_select_names(tree)
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         func = node.func
-        if _final_identifier(func) == "select":
+        if _resolves_to_select(func, select_names):
             found.append((node.lineno, "select("))
         elif (
             isinstance(func, ast.Attribute)
-            and func.attr == "execute"
+            and func.attr in SESSION_QUERY_METHODS
             and (base := _final_identifier(func.value)) is not None
             and base.lower().endswith("session")
         ):
-            found.append((node.lineno, "session.execute"))
+            found.append((node.lineno, f"session.{func.attr}"))
     return found
+
+
+def _sqlalchemy_select_names(tree: ast.AST) -> tuple[set[str], set[str]]:
+    """Return the local names bound to sqlalchemy's `select` and to sqlalchemy.
+
+    Resolving against imports is what separates a real query from a call
+    that merely shares the name.
+    """
+    direct: set[str] = set()
+    modules: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("sqlalchemy"):
+            direct |= {alias.asname or alias.name for alias in node.names if alias.name == "select"}
+        elif isinstance(node, ast.Import):
+            modules |= {
+                alias.asname or alias.name.split(".")[0]
+                for alias in node.names
+                if alias.name.startswith("sqlalchemy")
+            }
+    return direct, modules
+
+
+def _resolves_to_select(func: ast.expr, names: tuple[set[str], set[str]]) -> bool:
+    """Whether a call target is sqlalchemy's `select`, however it was bound."""
+    direct, modules = names
+    if isinstance(func, ast.Name):
+        return func.id in direct
+    if isinstance(func, ast.Attribute) and func.attr == "select":
+        return _final_identifier(func.value) in modules
+    return False
 
 
 def test_no_module_outside_persistence_issues_queries():

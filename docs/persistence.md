@@ -14,6 +14,9 @@ exit and rolls back and re-raises on error:
 from juicebox.persistence.database import session_scope
 from juicebox.persistence.repositories import AgentRepository
 
+# Entities and status enums live in models; nothing else re-exports them.
+from juicebox.persistence.models import Agent, AgentStatus, MessageType, TaskStatus
+
 async with session_scope() as session:
     agent = await AgentRepository.create(session, "my-agent", definition, objective)
 ```
@@ -37,10 +40,10 @@ the rest hang off and carries neither. Mutable tables also carry
 | Table | Columns beyond the common set | Notes |
 | --- | --- | --- |
 | `agent` | `name`, `definition` (`JSONB`), `objective` (`JSONB`), `repository_url`, `base_branch`, `work_branch`, `status`, `failure_reason`, `started_at`, `finished_at` | Root entity; no `agent_id`/`run_id`. `status` defaults to `created`. |
-| `run` | `agent_id`, `attempt`, `status`, `iteration_count` (default `0`), `current_task_id`, `checkpoint` (`JSONB`, nullable), `failure_reason`, `started_at`, `finished_at` | One numbered attempt at an agent's objective. Unique on `(agent_id, attempt)`. Never `created` — a run is created by starting. |
-| `task` | `agent_id`, `run_id`, `title`, `status`, `priority`, `dependencies` (`JSONB` list of task ids), `attempts` (default `0`), `result` (`JSONB`, nullable), `error`, `started_at`, `finished_at` | One node in the task graph. |
-| `message` | `seq` (`BIGSERIAL`-equivalent identity), `agent_id`, `run_id`, `type`, `body` (`JSONB`), `consumed_at` | Sent to a running agent. Index on `(agent_id, seq)`. Ordered by `seq`, not `created_at`, which is transaction-scoped and ties within a transaction. |
-| `event` | `seq`, `agent_id`, `run_id`, `name`, `payload` (`JSONB`) | Append-only; no `updated_at`. Index on `(agent_id, seq)`. |
+| `run` | `agent_id`, `attempt`, `status`, `iteration_count` (default `0`), `current_task_id` (plain UUID, no foreign key, so deleting a task leaves it dangling), `checkpoint` (`JSONB`, nullable), `failure_reason`, `started_at`, `finished_at` | One numbered attempt at an agent's objective. Unique on `(agent_id, attempt)`. Never `created` — a run is created by starting. |
+| `task` | `agent_id`, `run_id`, `title`, `status` (default `pending`), `priority`, `dependencies` (`JSONB` list of task ids), `attempts` (default `0`), `result` (`JSONB`, nullable), `error`, `started_at`, `finished_at` | One node in the task graph. |
+| `message` | `seq` (identity column, unique), `agent_id`, `run_id`, `type`, `body` (`JSONB`), `consumed_at` | Sent to a running agent. Index on `(agent_id, seq)`. Ordered by `seq`, not `created_at`, which is transaction-scoped and ties within a transaction. |
+| `event` | `seq` (identity column, unique), `agent_id`, `run_id`, `name`, `payload` (`JSONB`) | Append-only; no `updated_at`. Index on `(agent_id, seq)`. |
 | `artifact` | `agent_id`, `run_id`, `kind`, `name`, `path`, `content_type`, `size_bytes` | Append-only; no `updated_at`. `kind` is a free-form string, not CHECK-constrained — section 4 lists it as illustrative, not a closed set. |
 | `iteration_record` | `agent_id`, `run_id`, `iteration`, `task_id` (nullable, `ondelete="SET NULL"`), `action`, `command`, `result`, `next_action`, `model`, `input_tokens`, `output_tokens`, `cost_usd` (`Numeric(12, 6)`) | Append-only; no `updated_at`. Unique on `(run_id, iteration)`. `task_id` is `SET NULL` rather than cascaded: history should outlive the task it was once linked to. |
 
@@ -73,8 +76,16 @@ Every repository is a class of `@staticmethod`s taking an `AsyncSession`
 as its first argument. None opens, commits, or rolls back a session — the
 caller owns the transaction boundary via `session_scope()`. This is
 enforced by `tests/unit/test_query_locality.py`: no module under
-`src/juicebox` outside `persistence/` may call `select(` or
-`session.execute`.
+`src/juicebox` outside `persistence/` may call sqlalchemy's `select`, or
+a query method on a session. The test resolves `select` against each
+module's imports, so an aliased import is caught and an unrelated
+function of the same name is not. It cannot catch a query issued through
+a name that is only resolvable at runtime.
+
+Two rows have no repository accessor yet: nothing writes `artifact`, and
+`MessageRepository` reads and consumes messages but does not create them.
+W9 and W10 own those writers. Until then those rows are inserted through
+the models directly, inside `session_scope()`.
 
 ### `AgentRepository`
 

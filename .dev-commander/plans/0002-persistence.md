@@ -73,8 +73,13 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
 - Requires W0 complete.
 - Exemption: design 0002's workstream criterion 2 runs
   `pdm run pytest tests/acceptance`, which exits 4 because that directory
-  does not exist until W12, and contradicts criterion 3, which correctly
-  traces no requirement to W1. Close-out verifies
+  does not exist until W12. The rationale first recorded here was wrong:
+  it claimed criterion 3 traces no requirement to W1, but the traceability
+  map traces MVP-10 and AMD-01 to W1 and W9 both, naming a
+  `state-durability.feature` that does not exist yet. The map's own rule is
+  that a requirement spanning workstreams is covered when the last of them
+  completes, so both close in W9, which authors the scenario. W1 delivers
+  the persistence half. Close-out verifies
   `make lint test && pdm run pytest -m integration` instead. Review 0003
   records the amendment design 0002 needs.
 

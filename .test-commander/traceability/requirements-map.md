@@ -14,7 +14,7 @@ planned.
 | Workstream | Plan | Requirements | Acceptance scenario file |
 |-----------|------|--------------|--------------------------|
 | W0 Foundation | 0001 | none — infrastructure only | none |
-| W1 Persistence | 0002 | MVP-10, AMD-01 | `state-durability.feature` |
+| W1 Persistence | 0002 | MVP-10, AMD-01 | `state-durability.feature` (authored in W9) |
 | W2 Schemas | 0003 | MVP-02, MVP-03 | `agent-definition.feature` |
 | W3 Agents API | 0004 | MVP-01, MVP-02, MVP-03, MVP-11, MVP-12, MVP-13, AMD-06, AMD-07 | `agent-lifecycle.feature` |
 | W4 Events and logging | 0005 | MVP-11 | `observability.feature` |
@@ -44,3 +44,11 @@ asserts only its own part.
 None open. Two items are deliberately untraced and recorded in the
 inventory's open questions: ACC-05's dependence on a real model, and
 secret handling beyond environment variables in specification section 17.
+
+## W1 completion note
+
+W1 completed on 2026-08-20. MVP-10 and AMD-01 both span W1 and W9, so
+neither closes here: W1 delivers durable state — the seven entities,
+their migrations, and the repository layer — and W9 delivers the
+interrupted-run behaviour and authors `state-durability.feature` that
+exercises both halves. Their inventory status stays `planned` until then.
