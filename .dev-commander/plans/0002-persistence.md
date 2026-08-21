@@ -53,6 +53,15 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
 - `now()` is transaction-scoped in PostgreSQL. Rows inserted in one
   transaction share an identical `created_at`, so any test asserting
   ordering must either commit separately or order by a monotonic column.
+- An ordering test must filter on a column the ordering index does not
+  cover, or it cannot detect a missing `ORDER BY`. Three ordering tests in
+  this workstream passed for the wrong reason before this was understood:
+  first because Postgres returned tied rows in insertion order by
+  coincidence, then because an index whose key began with the filtered
+  column returned sorted rows with no sort step at all. Prove each ordering
+  test discriminates by deleting its `ORDER BY` and watching it fail under
+  default planner settings, which is what CI runs. A proof that needs
+  `enable_indexscan=off` proves nothing about CI.
 - Requires W0 complete.
 - Exemption: design 0002's workstream criterion 2 runs
   `pdm run pytest tests/acceptance`, which exits 4 because that directory

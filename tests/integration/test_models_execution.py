@@ -81,6 +81,21 @@ async def test_iteration_records_are_returned_in_iteration_order_for_a_run():
 
     assert [row.action for row in ordered] == ["action-0", "action-1", "action-2"]
 
+    # The query above filters on run_id, which the (run_id, iteration) unique
+    # index covers, so Postgres returns iteration-sorted rows even without an
+    # ORDER BY and the assertion cannot detect a missing one. agent_id has no
+    # index on this table, so the same assertion over an agent-scoped filter
+    # forces a sequential scan and genuinely depends on the ORDER BY.
+    async with session_scope() as session:
+        rows = await session.scalars(
+            select(IterationRecord)
+            .where(IterationRecord.agent_id == agent.id)
+            .order_by(IterationRecord.iteration)
+        )
+        agent_scoped = list(rows)
+
+    assert [row.action for row in agent_scoped] == ["action-0", "action-1", "action-2"]
+
 
 @pytest.mark.integration
 async def test_artifact_round_trips():
