@@ -108,6 +108,14 @@ contradict something already written down.
    error path inside an objective reports a `loc` beginning `("objective",
    ...)`, and the tests below assert that prefix.
 
+   The same decision has a consequence W3 must know: because
+   `populate_by_name` is deliberately absent, `AgentDefinition.model_dump()`
+   emits `api_version` while validation accepts only `apiVersion`, so a
+   bare dump does not round-trip. `model_dump(by_alias=True)` does.
+   Increment 7 documents it. The alternative — adding `populate_by_name` —
+   is worse: it would make a document written with `api_version:` validate
+   silently, which is the trap the scan caught in increment 1.
+
 ## Increments
 
 ### 1. YAML loading and the document envelope
@@ -657,7 +665,12 @@ glob keeps validating it on every run. A proof written and then deleted
 guards nothing.
 
 Minimal implementation: `docs/schemas.md` covering both documents field by
-field with types, defaults, and closed value sets; the memory and timeout
+field with types, defaults, and closed value sets; that a definition must
+be dumped with `model_dump(by_alias=True)` and never a bare `model_dump()`,
+because `api_version` carries the alias `apiVersion` and deliberately has
+no `populate_by_name`, so a bare dump produces a document that will not
+re-validate — proven during increment 3's review, and a live trap for W3,
+which persists these documents as JSONB and reads them back; the memory and timeout
 grammars; the least-privilege permission defaults with the reason; that
 `context` values must be strings; that `require_approval_for` is a list
 that tolerates duplicates rather than a set; and that `secrets` entries are
