@@ -29,6 +29,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `artifact` and `iteration_record` tables (`juicebox.persistence.models`),
+  the last of the W1 schema: `artifact` records one output an agent
+  produces (`kind`, `name`, `path`, `content_type`, `size_bytes`) and
+  `iteration_record` records one execution-loop iteration (`action`,
+  `command`, `result`, `next_action`, an optional `task_id` set to `NULL`
+  rather than cascaded if its task is deleted, and the `model`,
+  `input_tokens`, `output_tokens`, and `cost_usd` section 18's minimum
+  metrics require). `cost_usd` is `Numeric(12, 6)`, not a float, so
+  sub-cent per-call costs are exact. `iteration_record` is unique on
+  `(run_id, iteration)`. Both tables are append-only, like `event`, so
+  neither has `updated_at`, and both cascade when their agent or run is
+  deleted. `message` also gains an index on `(agent_id, seq)`, matching
+  `event`'s, ahead of W1 increment 8's `list_unconsumed` query.
 - Async SQLAlchemy engine and session factory (`juicebox.persistence`),
   built from `Settings().database_url` with a `NullPool` engine so pooled
   connections cannot outlive a test's event loop.

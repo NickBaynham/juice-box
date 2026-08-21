@@ -285,7 +285,7 @@ Commit: `Add message and event models`
 
 ### 6. Artifact and IterationRecord models
 
-- [ ] Store run outputs and the per-iteration execution history.
+- [x] Store run outputs and the per-iteration execution history.
 
 Files: `src/juicebox/persistence/models.py`,
 `migrations/versions/<hash>_add_artifact_and_iteration.py`,

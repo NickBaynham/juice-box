@@ -51,7 +51,17 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   message types, enforced in the database by a CHECK constraint.
 - `seq`, a monotonic `BIGSERIAL`-equivalent identity column on `message`
   and `event`, giving deterministic ordering independent of `created_at`
-  and serving as the cursor for future paged reads.
+  and serving as the cursor for future paged reads. `message` also
+  carries an index on `(agent_id, seq)`, matching `event`'s.
+- `artifact` table storing one output an agent produces: kind, name,
+  path, content type, size in bytes, and creation timestamp. Cascades
+  when its agent or run is deleted.
+- `iteration_record` table storing one execution-loop iteration: action,
+  command, result, next action, an optional link to the task it worked
+  on (set to `NULL` rather than deleted if that task goes away), the
+  model used and its input/output token counts, an exact `Numeric(12,
+  6)` cost in USD, and a creation timestamp. Unique on
+  `(run_id, iteration)`; cascades when its agent or run is deleted.
 
 ## Configuration
 

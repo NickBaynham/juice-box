@@ -1,8 +1,9 @@
 """Declarative base, lifecycle status enums, and the agent, run, task,
-message, and event tables."""
+message, event, artifact, and iteration record tables."""
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated, Any
 
@@ -13,6 +14,7 @@ from sqlalchemy import (
     ForeignKey,
     Identity,
     Index,
+    Numeric,
     UniqueConstraint,
     func,
 )
@@ -197,7 +199,10 @@ class Message(Base):
     """A message sent to a running agent, per specification section 7."""
 
     __tablename__ = "message"
-    __table_args__ = (status_check("type", MessageType, "ck_message_type"),)
+    __table_args__ = (
+        status_check("type", MessageType, "ck_message_type"),
+        Index("ix_message_agent_id_seq", "agent_id", "seq"),
+    )
 
     id: Mapped[UuidPk]
     seq: Mapped[Seq]
@@ -226,4 +231,77 @@ class Event(Base):
     run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
     name: Mapped[str]
     payload: Mapped[Json]
+    created_at: Mapped[CreatedAt]
+
+
+class Artifact(Base):
+    """Output an agent produces during execution, per specification section 4.
+
+    `kind` is a plain string: section 4 lists source code, tests, reports,
+    screenshots, logs, documentation, plans, and analysis as examples, not
+    as a closed set the way sections 6, 7, and 11 enumerate statuses, so no
+    CHECK constraint restricts it. Append-only like `Event`, so there is no
+    `updated_at`.
+    """
+
+    __tablename__ = "artifact"
+
+    id: Mapped[UuidPk]
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agent.id", ondelete="CASCADE")
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
+    kind: Mapped[str]
+    name: Mapped[str]
+    path: Mapped[str]
+    content_type: Mapped[str]
+    size_bytes: Mapped[int]
+    created_at: Mapped[CreatedAt]
+
+
+class IterationRecord(Base):
+    """One execution-loop iteration an agent completes, per specification
+    section 10.
+
+    `action` and `next_action` are plain strings for the same reason as
+    `Artifact.kind`: section 10's example iteration only shows `"shell"`,
+    and the tool list in section 4 is illustrative, not an enumerated set
+    of legal actions. `task_id` is nullable because an iteration can occur
+    before an agent has decomposed any task, and uses `ondelete="SET
+    NULL"` rather than `CASCADE`: a task can be deleted on its own, and an
+    iteration record is history that should outlive the task it was once
+    linked to, the same way `Run.current_task_id` carries no cascade.
+    `model`, `input_tokens`, `output_tokens`, and `cost_usd` are nullable
+    because not every action invokes an LLM. `cost_usd` is `Numeric(12,
+    6)`, not `float`: money must not use binary floating point, and six
+    decimal places hold sub-cent per-call costs (input/output token
+    pricing is commonly quoted to fractions of a cent per token) while
+    twelve total digits leaves headroom for a cumulative figure without
+    overflow. Append-only like `Event`, so there is no `updated_at`.
+    """
+
+    __tablename__ = "iteration_record"
+    __table_args__ = (
+        UniqueConstraint(
+            "run_id", "iteration", name="uq_iteration_record_run_iteration"
+        ),
+    )
+
+    id: Mapped[UuidPk]
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agent.id", ondelete="CASCADE")
+    )
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("run.id", ondelete="CASCADE"))
+    iteration: Mapped[int]
+    task_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("task.id", ondelete="SET NULL")
+    )
+    action: Mapped[str]
+    command: Mapped[str | None]
+    result: Mapped[str | None]
+    next_action: Mapped[str | None]
+    model: Mapped[str | None]
+    input_tokens: Mapped[int | None]
+    output_tokens: Mapped[int | None]
+    cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 6))
     created_at: Mapped[CreatedAt]
