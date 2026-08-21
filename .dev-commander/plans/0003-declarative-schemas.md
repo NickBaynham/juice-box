@@ -455,7 +455,10 @@ six slugs this plan's decision 1 names: `MERGE = "merge"`,
 
 `Repository` with `url: str = Field(pattern=r"^https://")` — use the field
 pattern or a `@field_validator`, never a `@model_validator`, which reports
-`loc == ()` and would fail the test above — and
+`loc == ()` and would fail the test above — plus a `@field_validator` that
+rejects a URL carrying credentials, since `^https://` alone admits
+`https://user:token@host/repo` and section 17 requires secrets to be
+referenced by name and never embedded; and
 `branch: str | None = None`. SSH URLs are rejected because W6 clones inside
 a container with no agent key, so an SSH URL would fail at clone time with
 a less useful message. `Execution` with

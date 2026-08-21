@@ -4,6 +4,7 @@ import re
 from datetime import timedelta
 from enum import StrEnum
 from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
@@ -129,13 +130,28 @@ class Repository(BaseModel):
 
     `url` must be `https://`, never `ssh://` or `git@`: W6 clones inside a
     container with no agent key, so an SSH URL would fail at clone time
-    with a less useful message than rejecting it here.
+    with a less useful message than rejecting it here. It must also carry
+    no credentials, per specification section 17.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     url: str = Field(pattern=r"^https://")
     branch: str | None = None
+
+    @field_validator("url")
+    @classmethod
+    def _reject_embedded_credentials(cls, value: str) -> str:
+        """Refuse `https://user:token@host/repo`.
+
+        Section 17 requires secrets to be referenced by name and never
+        embedded. A credential here would reach the persisted definition,
+        the clone command, and anything logging either.
+        """
+        split = urlsplit(value)
+        if split.username or split.password:
+            raise ValueError("url must not embed credentials; reference a secret by name")
+        return value
 
 
 class ApprovalOperation(StrEnum):

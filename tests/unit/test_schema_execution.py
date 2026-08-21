@@ -37,3 +37,15 @@ def test_rejects_a_non_positive_iteration_limit():
     with pytest.raises(ValidationError) as caught:
         Execution.model_validate({"max_iterations": 0})
     assert caught.value.errors()[0]["loc"] == ("max_iterations",)
+
+
+def test_rejects_a_repository_url_carrying_credentials():
+    """Specification section 17: secrets are referenced by name, never
+    embedded. A credential in the URL would reach persisted JSONB and the
+    clone command W6 runs.
+    """
+    with pytest.raises(ValidationError) as caught:
+        Repository.model_validate(
+            {"url": "https://user:token@github.com/example/application"}
+        )
+    assert caught.value.errors()[0]["loc"] == ("url",)
