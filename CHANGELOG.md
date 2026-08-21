@@ -29,6 +29,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Persistence layer documentation (`docs/persistence.md`): the seven
+  tables and their columns, the status and type enums and their lowercase
+  legal values, every repository method's signature, how to create a
+  migration, and why a later `relationship()` needs `passive_deletes=True`.
+  Records two performance items found in increment 8, neither fixed here:
+  `task` has no index on `run_id`, and `repositories.py` holds all six
+  repository classes in one module. Closes out workstream W1: persistence.
+- `tests/integration/test_migration_data_correctness.py`, proving the
+  lowercase-status migration (`a017971fe447`) is data-correct and not
+  merely schema-correct: it seeds uppercase `agent` and `run` rows through
+  raw SQL at the prior revision, since the current models reject
+  uppercase values, upgrades through the migration, and asserts the
+  seeded rows were actually rewritten to lowercase. Every table is empty
+  during a normal run, so the migration's `UPDATE` statements were
+  otherwise exercised by nothing.
+- `tests/unit/test_query_locality.py`, the executable form of the
+  workstream's exit criterion that the repository layer is the only
+  module issuing queries: an `ast`-based scan, not a text scan, asserting
+  no module under `src/juicebox` outside `persistence/` calls `select(`
+  or a `session.execute(...)`-shaped method.
 - `AgentRepository` and `RunRepository` (`juicebox.persistence.repositories`),
   the first repositories in the persistence layer: `AgentRepository.create`,
   `get`, `list` (newest-created first, with `limit` and `offset`),

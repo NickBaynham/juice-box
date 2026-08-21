@@ -6,9 +6,9 @@ isolated containers.
 
 ## Status
 
-Early development. Workstream W0 (project foundation) is complete. See
-[FEATURES.md](FEATURES.md) for what works today and [TODO.md](TODO.md) for
-what is planned.
+Early development. Workstreams W0 (project foundation) and W1
+(persistence) are complete. See [FEATURES.md](FEATURES.md) for what works
+today and [TODO.md](TODO.md) for what is planned.
 
 ## Requirements
 
@@ -49,6 +49,7 @@ tests, and the full settings reference.
 ## Documentation
 
 - [Development guide](docs/development.md)
+- [Persistence layer](docs/persistence.md)
 - [Specification](docs/specs/juice-box-spec.md)
 - [Feature list](FEATURES.md)
 - [To do](TODO.md)

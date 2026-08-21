@@ -384,7 +384,7 @@ Commit: `Add task, message, event, and iteration repositories`
 
 ### 9. Workstream close-out
 
-- [ ] Document the persistence layer and close out W1.
+- [x] Document the persistence layer and close out W1.
 
 Files: `docs/persistence.md`, `README.md`, `CHANGELOG.md`, `FEATURES.md`,
 `TODO.md`, `tests/unit/test_query_locality.py`

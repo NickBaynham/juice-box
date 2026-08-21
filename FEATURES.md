@@ -80,6 +80,14 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   model used and its input/output token counts, an exact `Numeric(12,
   6)` cost in USD, and a creation timestamp. Unique on
   `(run_id, iteration)`; cascades when its agent or run is deleted.
+- `docs/persistence.md`, documenting the entity list, status and type
+  enums, repository API signatures, and how to add a migration, so the
+  layer can be used without opening `models.py`.
+- `tests/integration/test_migration_data_correctness.py`, proving a data
+  migration's `UPDATE` statements actually rewrite seeded rows, not only
+  that the schema applies.
+- `tests/unit/test_query_locality.py`, an `ast`-based check that no
+  module outside `persistence/` issues a query directly.
 
 ## Configuration
 

@@ -4,12 +4,12 @@ Workstreams from the [MVP decomposition](.dev-commander/design/0001-mvp-decompos
 A workstream is complete when its exit criteria pass and every increment of
 its plan is committed.
 
-Phase 0 (W0, project foundation) is complete; see
+Phase 0 (W0, project foundation) and W1 (persistence) are complete; see
 [FEATURES.md](FEATURES.md).
 
 ## Phase 1: MVP
 
-- [ ] W1. Persistence. Async SQLAlchemy models, Alembic migrations, session
+- [x] W1. Persistence. Async SQLAlchemy models, Alembic migrations, session
       management, repository layer.
 - [ ] W2. Declarative schemas. Pydantic agent definition and objective
       models, YAML loading, validation.
