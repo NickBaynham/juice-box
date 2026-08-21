@@ -353,7 +353,7 @@ Commit: `Add agent and run repositories`
 
 ### 8. Remaining repositories
 
-- [ ] Provide the accessors for tasks, messages, events, and iterations.
+- [x] Provide the accessors for tasks, messages, events, and iterations.
 
 Files: `src/juicebox/persistence/repositories.py`,
 `tests/integration/test_repositories.py`

@@ -38,6 +38,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   attempt. Both are classes of static methods taking an `AsyncSession` the
   caller obtained from `session_scope()`; neither opens or commits its own
   session, keeping the repository layer the only module issuing queries.
+- `TaskRepository`, `MessageRepository`, `EventRepository`, and
+  `IterationRepository` (`juicebox.persistence.repositories`), completing
+  the persistence layer: `TaskRepository.create`, `get`, and `list_for_run`
+  (oldest-created first, `id` breaking ties); `MessageRepository.list_unconsumed`,
+  agent-scoped and oldest-first by `seq`, and `mark_consumed`, which stamps
+  `consumed_at` and returns the message, or `None` for an unknown id;
+  `EventRepository.append` and `list_for_agent` (oldest-first by `seq`);
+  `IterationRepository.append` and `list_for_run` (ordered by `iteration`).
+  Same static-method, session-taking shape as `AgentRepository` and
+  `RunRepository`; none of the four opens or commits its own session.
+  `IterationRepository.list_for_run` filters on `run_id`, which the
+  `(run_id, iteration)` unique index covers, so its own ORDER BY cannot be
+  proven necessary by that filter alone; its test adds an agent-scoped
+  assertion over the same rows, which has no covering index, to prove the
+  ordering is genuinely enforced rather than incidental.
   `create_attempt` reads the current highest attempt then writes one
   higher, which races under concurrent starters for the same agent; the
   MVP has a single orchestrator and the unique `(agent_id, attempt)`

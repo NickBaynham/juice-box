@@ -65,6 +65,15 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   `RunRepository` provides `create_attempt`, which numbers an agent's run
   attempts per ADR-0006, and `get_current`, which returns the latest
   attempt.
+- `TaskRepository`, `MessageRepository`, `EventRepository`, and
+  `IterationRepository` (`juicebox.persistence.repositories`), completing
+  the repository layer in the same static-method, session-taking shape.
+  `TaskRepository` provides `create`, `get`, and `list_for_run`
+  (oldest-created first). `MessageRepository` provides `list_unconsumed`,
+  agent-scoped and oldest-first by `seq`, and `mark_consumed`, which
+  stamps `consumed_at`. `EventRepository` provides `append` and
+  `list_for_agent` (oldest-first by `seq`). `IterationRepository` provides
+  `append` and `list_for_run` (ordered by `iteration`).
 - `iteration_record` table storing one execution-loop iteration: action,
   command, result, next action, an optional link to the task it worked
   on (set to `NULL` rather than deleted if that task goes away), the
