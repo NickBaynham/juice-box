@@ -395,7 +395,7 @@ Commit: `Add runtime and permission validation`
 
 ### 4. Repository and execution
 
-- [ ] Validate the repository coordinates and the execution limits,
+- [x] Validate the repository coordinates and the execution limits,
       including the approval set ADR-0004 requires be closed.
 
 Files: `src/juicebox/schemas/agent.py`,

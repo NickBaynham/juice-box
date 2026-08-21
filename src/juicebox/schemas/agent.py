@@ -124,6 +124,45 @@ class Permissions(BaseModel):
     shell: bool = False
 
 
+class Repository(BaseModel):
+    """The `repository:` block: where W6 clones an agent's working copy.
+
+    `url` must be `https://`, never `ssh://` or `git@`: W6 clones inside a
+    container with no agent key, so an SSH URL would fail at clone time
+    with a less useful message than rejecting it here.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    url: str = Field(pattern=r"^https://")
+    branch: str | None = None
+
+
+class ApprovalOperation(StrEnum):
+    """Operations `execution.require_approval_for` may name, per ADR-0004.
+
+    A closed set so an unknown value is rejected rather than silently
+    dropped. Three members have no MVP enforcement point; increment 7
+    documents each against its enforcement point and workstream.
+    """
+
+    MERGE = "merge"
+    PRODUCTION_DEPLOYMENT = "production-deployment"
+    SECRET_MODIFICATION = "secret-modification"
+    FORCE_PUSH = "force-push"
+    CLOUD_RESOURCE_DELETION = "cloud-resource-deletion"
+    REPOSITORY_DATA_DELETION = "repository-data-deletion"
+
+
+class Execution(BaseModel):
+    """The `execution:` block: iteration limits and approval gates."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    max_iterations: int = Field(default=100, gt=0)
+    require_approval_for: list[ApprovalOperation] = []
+
+
 class AgentDefinition(BaseModel):
     """The full agent document envelope."""
 
@@ -137,3 +176,5 @@ class AgentDefinition(BaseModel):
     secrets: list[SlugName] = []
     runtime: Runtime | None = None
     permissions: Permissions = Permissions()
+    repository: Repository | None = None
+    execution: Execution = Execution()

@@ -121,6 +121,19 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   definition that omits `permissions:` is never treated as unrestricted,
   per ADR-0004. `FilesystemAccess` is a `StrEnum` (`read-only`,
   `read-write`) per ADR-0009.
+- `AgentDefinition.repository` (optional `Repository`) and `.execution`
+  (`Execution`, always present) validate the `repository:` and
+  `execution:` blocks of section 8. `Repository.url` must match
+  `^https://`, since W6 clones inside a container with no agent key and an
+  SSH URL would otherwise fail later, at clone time, with a less useful
+  message. `Execution.max_iterations` defaults to `100` and must be
+  positive, so it always has a value for W9 to enforce.
+  `Execution.require_approval_for` is a list of `ApprovalOperation`, a
+  closed `StrEnum` of six slugs — `merge`, `production-deployment`,
+  `secret-modification`, `force-push`, `cloud-resource-deletion`,
+  `repository-data-deletion` — so ADR-0004's requirement that an unknown
+  approval operation be rejected, not silently dropped, is enforceable.
+  Specification section 8's full example now validates end to end.
 
 ## Configuration
 

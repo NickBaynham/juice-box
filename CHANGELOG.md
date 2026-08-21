@@ -63,6 +63,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   absent on a validated `AgentDefinition`. `FilesystemAccess` is a
   `StrEnum` with lowercase values (`read-only`, `read-write`) per
   ADR-0009.
+- `Repository` and `Execution`, the `repository:` and `execution:` blocks
+  of specification section 8, wired onto `AgentDefinition` as `repository:
+  Repository | None = None` and `execution: Execution = Execution()` so
+  `max_iterations` always has a value for W9 to enforce. `Repository.url`
+  is constrained to `^https://` on the field itself, since W6 clones
+  inside a container with no agent key and an SSH URL would only fail
+  later, at clone time, with a less useful message.
+  `ApprovalOperation` is a closed `StrEnum` of the six approval slugs
+  `execution.require_approval_for` may name — `merge`,
+  `production-deployment`, `secret-modification`, `force-push`,
+  `cloud-resource-deletion`, `repository-data-deletion` — derived from
+  section 16's prose examples plus section 8's own two, since ADR-0004
+  requires an unknown operation be rejected and neither section on its own
+  gives a closed set. Three members have no MVP enforcement point yet;
+  increment 7 documents each against its enforcement point and
+  workstream. With this block wired on, specification section 8's example
+  now validates end to end.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a
