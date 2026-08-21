@@ -6,6 +6,7 @@ the transaction boundary.
 """
 
 import uuid
+from typing import Any
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,8 +21,8 @@ class AgentRepository:
     async def create(
         session: AsyncSession,
         name: str,
-        definition: dict,
-        objective: dict,
+        definition: dict[str, Any],
+        objective: dict[str, Any],
         *,
         repository_url: str | None = None,
         base_branch: str | None = None,
@@ -49,9 +50,18 @@ class AgentRepository:
     async def list(
         session: AsyncSession, *, limit: int = 50, offset: int = 0
     ) -> list[Agent]:
-        """Return agents newest-created first, paged by `limit` and `offset`."""
+        """Return agents newest-created first, paged by `limit` and `offset`.
+
+        `id` breaks ties because `created_at` defaults to `now()`, which is
+        transaction-scoped: agents created in one transaction share a
+        timestamp, and without a tiebreaker their relative order is
+        arbitrary, so paging over them could skip or repeat rows.
+        """
         rows = await session.scalars(
-            select(Agent).order_by(Agent.created_at.desc()).limit(limit).offset(offset)
+            select(Agent)
+            .order_by(Agent.created_at.desc(), Agent.id)
+            .limit(limit)
+            .offset(offset)
         )
         return list(rows)
 

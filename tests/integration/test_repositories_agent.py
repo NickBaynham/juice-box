@@ -178,3 +178,25 @@ async def test_get_current_returns_none_for_an_agent_with_no_runs():
         current = await RunRepository.get_current(session, agent.id)
 
     assert current is None
+
+
+@pytest.mark.integration
+async def test_list_is_deterministic_for_agents_sharing_a_created_at():
+    """Agents created in one transaction share created_at, since now() is
+    transaction-scoped. Without a tiebreaker their order is arbitrary and
+    paging over them could skip or repeat rows."""
+    async with session_scope() as session:
+        created = [
+            await AgentRepository.create(
+                session, name=f"agent-{index}", definition={}, objective={}
+            )
+            for index in range(3)
+        ]
+        ids = [agent.id for agent in created]
+
+    async with session_scope() as session:
+        listed = await AgentRepository.list(session)
+
+    timestamps = {agent.created_at for agent in listed}
+    assert len(timestamps) == 1, "expected one shared created_at"
+    assert [agent.id for agent in listed] == sorted(ids)
