@@ -112,7 +112,7 @@ contradict something already written down.
 
 ### 1. YAML loading and the document envelope
 
-- [ ] Load a YAML document and reject one that is not a Juice Box agent.
+- [x] Load a YAML document and reject one that is not a Juice Box agent.
 
 Files: `src/juicebox/schemas/__init__.py`,
 `src/juicebox/schemas/agent.py`, `src/juicebox/schemas/loading.py`,

@@ -29,6 +29,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `juicebox.schemas` package: Pydantic models for the agent definition
+  envelope of specification section 8, loaded from YAML.
+  `load_agent_definition(document)` parses with `yaml.safe_load` and
+  validates through `AgentDefinition`, whose `apiVersion`, `kind`,
+  `metadata`, and `agent` fields all forbid unknown keys, so a typo such
+  as `api_version:` is rejected rather than silently accepted.
+  `Metadata.name` is constrained to `^[a-z0-9][a-z0-9-]*$`, the pattern W6
+  will need to derive a work branch and container name from it. Opens
+  workstream W2: declarative schemas.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a

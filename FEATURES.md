@@ -89,6 +89,20 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - `tests/unit/test_query_locality.py`, an `ast`-based check that no
   module outside `persistence/` issues a query directly.
 
+## Declarative schemas
+
+- `juicebox.schemas.loading.load_agent_definition(document)`, parsing a
+  YAML string with `yaml.safe_load` and validating it against
+  `AgentDefinition`, the agent document envelope of specification
+  section 8: `apiVersion` (must be `juicebox.ai/v1`), `kind` (must be
+  `Agent`), `metadata.name` (must match `^[a-z0-9][a-z0-9-]*$`), and
+  `agent` (a `model` provider/model pair plus a `system_prompt`). Every
+  model forbids unknown fields, so a mistyped key such as `api_version:`
+  is rejected with a field-level `ValidationError` instead of being
+  silently dropped. Malformed YAML raises `yaml.YAMLError` unchanged.
+  Schemas live independently of `juicebox.persistence`: neither package
+  imports the other.
+
 ## Configuration
 
 - Typed settings for API host, API port, log level, and database URL, read
