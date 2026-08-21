@@ -196,7 +196,7 @@ Commit: `Add YAML loading and the agent document envelope`
 
 ### 2. Model, prompt, skills, and secrets
 
-- [ ] Validate the agent's model, system prompt, skill list, and the
+- [x] Validate the agent's model, system prompt, skill list, and the
       secrets it references by name.
 
 Files: `src/juicebox/schemas/agent.py`,

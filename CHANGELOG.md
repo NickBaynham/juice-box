@@ -38,6 +38,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `Metadata.name` is constrained to `^[a-z0-9][a-z0-9-]*$`, the pattern W6
   will need to derive a work branch and container name from it. Opens
   workstream W2: declarative schemas.
+- `AgentDefinition` gains top-level `skills` and `secrets` fields, siblings
+  of `metadata:` and `agent:` per specification section 8 and section 17,
+  each defaulting to an empty list. `AgentSpec.system_prompt` is stripped
+  and rejected when empty or all whitespace. Each `secrets` entry is a
+  `SecretName`, a name constrained to `^[a-z0-9][a-z0-9-]*$` reused from
+  `Metadata.name`'s pattern; the constraint lives on the item type rather
+  than a list-level validator so a rejected entry's error `loc` carries
+  its index. The pattern checks that a secret is referenced by name, not
+  that a name is credential-free — detecting leaked credentials is the
+  gitleaks step CI already runs.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a

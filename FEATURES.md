@@ -102,6 +102,13 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   silently dropped. Malformed YAML raises `yaml.YAMLError` unchanged.
   Schemas live independently of `juicebox.persistence`: neither package
   imports the other.
+- `AgentDefinition` also carries top-level `skills` and `secrets` lists,
+  siblings of `metadata:` and `agent:` per section 8 and section 17, each
+  defaulting to empty. `agent.system_prompt` is stripped and rejected when
+  empty. Each `secrets` entry must match `Metadata.name`'s
+  `^[a-z0-9][a-z0-9-]*$` slug pattern, checking that a secret is
+  referenced by name rather than embedded — not that the name is free of
+  credential-shaped text, which gitleaks already checks in CI.
 
 ## Configuration
 

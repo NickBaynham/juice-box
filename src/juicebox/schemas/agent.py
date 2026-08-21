@@ -1,10 +1,12 @@
 """Agent definition envelope: specification section 8."""
 
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 NAME_PATTERN = r"^[a-z0-9][a-z0-9-]*$"
+
+SecretName = Annotated[str, StringConstraints(pattern=NAME_PATTERN)]
 
 
 class Metadata(BaseModel):
@@ -36,6 +38,14 @@ class AgentSpec(BaseModel):
     model: ModelSpec
     system_prompt: str
 
+    @field_validator("system_prompt")
+    @classmethod
+    def _strip_and_require_nonempty(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("system_prompt must not be empty")
+        return stripped
+
 
 class AgentDefinition(BaseModel):
     """The full agent document envelope."""
@@ -46,3 +56,5 @@ class AgentDefinition(BaseModel):
     kind: Literal["Agent"]
     metadata: Metadata
     agent: AgentSpec
+    skills: list[str] = []
+    secrets: list[SecretName] = []
