@@ -326,7 +326,7 @@ Commit: `Add artifact and iteration record models`
 
 ### 7. Agent and run repositories
 
-- [ ] Provide the accessors carrying the ADR-0006 attempt logic.
+- [x] Provide the accessors carrying the ADR-0006 attempt logic.
 
 Files: `src/juicebox/persistence/repositories.py`,
 `tests/integration/test_repositories_agent.py`

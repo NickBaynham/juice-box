@@ -29,6 +29,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `AgentRepository` and `RunRepository` (`juicebox.persistence.repositories`),
+  the first repositories in the persistence layer: `AgentRepository.create`,
+  `get`, `list` (newest-created first, with `limit` and `offset`),
+  `set_status`, and `delete` (cascading to the agent's runs and every
+  run-scoped row); `RunRepository.create_attempt`, which numbers an agent's
+  run attempts per ADR-0006, and `get_current`, which returns the latest
+  attempt. Both are classes of static methods taking an `AsyncSession` the
+  caller obtained from `session_scope()`; neither opens or commits its own
+  session, keeping the repository layer the only module issuing queries.
+  `create_attempt` reads the current highest attempt then writes one
+  higher, which races under concurrent starters for the same agent; the
+  MVP has a single orchestrator and the unique `(agent_id, attempt)`
+  constraint fails loudly rather than corrupting data, so this is recorded
+  in the docstring rather than fixed with locking or retries.
 - `artifact` and `iteration_record` tables (`juicebox.persistence.models`),
   the last of the W1 schema: `artifact` records one output an agent
   produces (`kind`, `name`, `path`, `content_type`, `size_bytes`) and

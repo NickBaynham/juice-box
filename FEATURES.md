@@ -56,6 +56,15 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - `artifact` table storing one output an agent produces: kind, name,
   path, content type, size in bytes, and creation timestamp. Cascades
   when its agent or run is deleted.
+- `AgentRepository` and `RunRepository` (`juicebox.persistence.repositories`),
+  classes of static methods each taking an `AsyncSession` from
+  `session_scope()`. `AgentRepository` provides `create`, `get` (`None`
+  for an unknown id), `list` (newest-created first, paged by `limit` and
+  `offset`), `set_status` (advances `updated_at`), and `delete`
+  (cascading to the agent's runs and every run-scoped row).
+  `RunRepository` provides `create_attempt`, which numbers an agent's run
+  attempts per ADR-0006, and `get_current`, which returns the latest
+  attempt.
 - `iteration_record` table storing one execution-loop iteration: action,
   command, result, next action, an optional link to the task it worked
   on (set to `NULL` rather than deleted if that task goes away), the
