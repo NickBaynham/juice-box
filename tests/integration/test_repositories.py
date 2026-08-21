@@ -4,7 +4,7 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import text
 
 from juicebox.persistence.database import session_scope
 from juicebox.persistence.models import (
@@ -260,18 +260,19 @@ async def test_list_for_run_returns_records_ordered_by_iteration():
 
     assert [r.action for r in ordered] == ["action-0", "action-1", "action-2"]
 
-    # The query above filters on run_id, which the (run_id, iteration)
-    # unique index covers, so Postgres can return iteration-sorted rows
-    # even with the ORDER BY removed (increment 6 hit exactly this in the
-    # model-level test). agent_id has no index on this table, so the same
-    # assertion filtered by agent_id forces a sequential scan and sort,
-    # and genuinely depends on the ORDER BY clause above.
+    # The assertion above cannot fail. list_for_run filters on run_id, the
+    # leading column of the (run_id, iteration) unique index, so Postgres
+    # returns index-order rows with no sort node and the result is already
+    # iteration-ordered whether or not the query says so. Increment 6 hit
+    # the same index at the model level.
+    #
+    # Repeating the call with index scans disabled forces a sequential scan
+    # and a real sort, which is the only condition under which this method's
+    # own ORDER BY is load-bearing. Deleting it from the repository makes
+    # this second assertion fail. SET LOCAL lasts for the transaction only.
     async with session_scope() as session:
-        rows = await session.scalars(
-            select(IterationRecord)
-            .where(IterationRecord.agent_id == agent.id)
-            .order_by(IterationRecord.iteration)
-        )
-        agent_scoped = list(rows)
+        for setting in ("enable_indexscan", "enable_bitmapscan", "enable_indexonlyscan"):
+            await session.execute(text(f"SET LOCAL {setting} = off"))
+        unindexed = await IterationRepository.list_for_run(session, run.id)
 
-    assert [r.action for r in agent_scoped] == ["action-0", "action-1", "action-2"]
+    assert [r.action for r in unindexed] == ["action-0", "action-1", "action-2"]

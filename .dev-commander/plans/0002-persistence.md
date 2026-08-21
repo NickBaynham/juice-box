@@ -60,8 +60,16 @@ Plan 0001's stack plus SQLAlchemy 2.x with asyncio, asyncpg, Alembic.
   coincidence, then because an index whose key began with the filtered
   column returned sorted rows with no sort step at all. Prove each ordering
   test discriminates by deleting its `ORDER BY` and watching it fail under
-  default planner settings, which is what CI runs. A proof that needs
-  `enable_indexscan=off` proves nothing about CI.
+  default planner settings, which is what CI runs.
+- When the method's filter column is fixed by its contract and an index
+  covers it, no dataset makes the test discriminate: Postgres returns
+  index-order rows with no sort node at all, so the `ORDER BY` cannot be
+  observed. `IterationRepository.list_for_run` is the case in point. The
+  test must then disable index scans itself, inside its own transaction with
+  `SET LOCAL`, so the method's `ORDER BY` becomes load-bearing. Disabling
+  scans in a throwaway proof while the committed test runs without it proves
+  nothing about CI; disabling them inside the committed test is what turns
+  it into a regression guard.
 - Requires W0 complete.
 - Exemption: design 0002's workstream criterion 2 runs
   `pdm run pytest tests/acceptance`, which exits 4 because that directory
@@ -380,6 +388,13 @@ Commit: `Add task, message, event, and iteration repositories`
 
 Files: `docs/persistence.md`, `README.md`, `CHANGELOG.md`, `FEATURES.md`,
 `TODO.md`, `tests/unit/test_query_locality.py`
+
+Note two performance items found in increment 8, neither a correctness
+defect and neither needing a migration in this workstream: `task` has no
+index on `run_id`, so `TaskRepository.list_for_run` sequential-scans, and
+`repositories.py` is now six classes in one module, worth splitting per
+aggregate if W3 grows it further. Record both in `docs/persistence.md`
+rather than fixing them here.
 
 Failing test first: an integration test proving a data migration is
 data-correct, not merely schema-correct. Every table is empty during a
