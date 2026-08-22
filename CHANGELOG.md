@@ -65,6 +65,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is rejected with a `422` from FastAPI's own path validation, whose body
   shape is a superset of `validation_error_detail`'s (it also carries
   `input` and `ctx`), not `validation_error_detail`'s own shape.
+- `juicebox.lifecycle`: the pure agent lifecycle state machine, with no
+  HTTP and no database. `LifecycleAction` (`start`, `stop`, `restart`,
+  `pause`, `resume`) and `next_status(current, action)`, which raises
+  `IllegalTransition` — carrying both the current status and the action
+  in its message — for any pair outside the seven-edge `TRANSITIONS`
+  table. The table includes `starting -> stopped`, not drawn in
+  specification section 6, because nothing advances an agent out of
+  `starting` until W9 exists; without it a started agent would be
+  unstoppable except by deletion. It also includes `failed -> starting`
+  and `stopped -> starting`, the two restart edges ADR-0002 requires even
+  though section 6 draws those states as terminal; `completed` stays
+  terminal. `is_legal(current, target)` answers over the full lifecycle
+  graph, including the system transitions no caller action names
+  (`starting -> running`, `running -> completed`, `running -> failed`),
+  so W9 has one place to ask instead of calling `set_status` directly.
 
 ### Fixed
 

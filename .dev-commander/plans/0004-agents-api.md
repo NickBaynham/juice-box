@@ -321,7 +321,7 @@ Commit: `Add agent listing, retrieval, and deletion`
 
 ### 3. The state machine
 
-- [ ] Decide whether a lifecycle transition is legal, with no HTTP and no
+- [x] Decide whether a lifecycle transition is legal, with no HTTP and no
       database involved.
 
 Files: `src/juicebox/lifecycle/__init__.py`,

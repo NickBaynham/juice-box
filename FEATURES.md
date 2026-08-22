@@ -206,6 +206,21 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   id, name, lowercase status, repository fields, and timestamps, never
   its `definition` or `objective` blob.
 
+## Lifecycle
+
+- `juicebox.lifecycle`: the pure agent lifecycle state machine (no HTTP,
+  no database). `LifecycleAction` names the five caller-initiated
+  operations (`start`, `stop`, `restart`, `pause`, `resume`).
+  `next_status(current, action)` looks the pair up in a seven-edge
+  transition table and raises `IllegalTransition`, carrying the current
+  status and the action, when there is no edge. The table adds
+  `starting -> stopped` (needed so a started agent can be stopped before
+  W9 ships) and the two ADR-0002 restart edges, `failed -> starting` and
+  `stopped -> starting`, to the edges specification section 6 draws;
+  `completed` stays terminal. `is_legal(current, target)` checks the
+  full lifecycle graph, including the system transitions no caller
+  action names, for W9's use.
+
 ## Container image
 
 - A `python:3.12-slim` based image installs the project with pdm and serves
