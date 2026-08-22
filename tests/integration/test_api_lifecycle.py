@@ -54,6 +54,12 @@ async def test_stop_agent_transitions_to_stopped(client):
     assert response.status_code == 200
     assert response.json()["status"] == "stopped"
 
+    # Only start creates an attempt. Without this the run count is asserted
+    # nowhere, and stop growing a create_attempt call would ship unnoticed.
+    async with session_scope() as session:
+        run = await RunRepository.get_current(session, uuid.UUID(agent_id))
+    assert run.attempt == 1
+
 
 @pytest.mark.integration
 async def test_start_agent_returns_404_for_an_absent_agent(client):

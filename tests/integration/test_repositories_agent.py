@@ -78,7 +78,16 @@ async def test_set_status_persists_and_strictly_advances_updated_at():
         original_updated_at = original.updated_at
 
     async with session_scope() as session:
-        await AgentRepository.set_status(session, created.id, AgentStatus.RUNNING)
+        returned = await AgentRepository.set_status(
+            session, created.id, AgentStatus.RUNNING
+        )
+        # Read the returned object inside its own session, without
+        # re-fetching. `updated_at` carries onupdate=func.now(), so it is
+        # server-computed and left expired after the flush; a caller that
+        # serialises this object without a refresh raises MissingGreenlet.
+        # Re-fetching in a fresh session, as the assertions below do, never
+        # crosses that boundary and so cannot catch it.
+        assert returned.updated_at > original_updated_at
 
     async with session_scope() as session:
         stored = await AgentRepository.get(session, created.id)

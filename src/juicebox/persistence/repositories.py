@@ -83,16 +83,18 @@ class AgentRepository:
     ) -> Agent | None:
         """Set an agent's status and, via `onupdate`, advance `updated_at`.
 
-        Refreshes after flush: `onupdate` is server-computed, so without a
-        refresh `updated_at` is left expired and a caller serialising the
-        agent triggers an unawaited lazy load.
+        Refreshes `updated_at` after flush: `onupdate` is server-computed,
+        so it alone is left expired, and a caller serialising the agent
+        triggers an unawaited lazy load. Refreshing the whole row instead
+        would re-fetch `definition` and `objective`, the two JSONB blobs a
+        summary response deliberately excludes.
         """
         agent = await session.get(Agent, agent_id)
         if agent is None:
             return None
         agent.status = status
         await session.flush()
-        await session.refresh(agent)
+        await session.refresh(agent, ["updated_at"])
         return agent
 
     @staticmethod
