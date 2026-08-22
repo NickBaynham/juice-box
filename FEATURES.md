@@ -196,6 +196,15 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - `juicebox.api.dependencies.get_session`, an async generator dependency
   yielding an `AsyncSession` from `session_scope()`, so routes take a
   session through `Depends` and never open one directly.
+- `GET /agents`, listing agents newest-created first, paged by `limit`
+  (default 50, bounded 1-200) and `offset` (bounded at 0 or above) so an
+  out-of-range value is a `422` rather than reaching PostgreSQL as an
+  invalid `LIMIT`/`OFFSET`. `GET /agents/{agent_id}`, returning one
+  agent or a `404` if it does not exist. `DELETE /agents/{agent_id}`,
+  returning `204` whether or not the agent existed, since deletion is
+  idempotent. Both read routes respond with `AgentSummary`: the agent's
+  id, name, lowercase status, repository fields, and timestamps, never
+  its `definition` or `objective` blob.
 
 ## Container image
 

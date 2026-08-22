@@ -52,6 +52,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   naming each operation's workstream and MVP status. Written into the ADR
   itself rather than left in the plan, since four other document
   amendments were already queued unserviced from earlier reviews.
+- `GET /agents`, `GET /agents/{agent_id}`, and `DELETE /agents/{agent_id}`:
+  list agents newest-created first through `AgentRepository.list`, paged
+  by `limit` (`Query(ge=1, le=200)`) and `offset` (`Query(ge=0)`) so an
+  out-of-range value is a `422` rather than reaching PostgreSQL; fetch one
+  agent by id, `404` when it does not exist; and delete one agent,
+  `204` whether or not it existed, since `AgentRepository.delete` issues
+  an unconditional `DELETE` and deletion is idempotent. `GET /agents` and
+  `GET /agents/{agent_id}` respond with `AgentSummary`, serialising the
+  agent's id, name, lowercase status, repository fields, and timestamps
+  without its `definition` or `objective` blob. A malformed `agent_id`
+  is rejected with a `422` from FastAPI's own path validation, whose body
+  shape is a superset of `validation_error_detail`'s (it also carries
+  `input` and `ctx`), not `validation_error_detail`'s own shape.
 
 ### Fixed
 

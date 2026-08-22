@@ -275,7 +275,7 @@ Commit: `Add agent creation and the validation error contract`
 
 ### 2. Reading and deleting agents
 
-- [ ] List agents newest first, fetch one by id, and delete one.
+- [x] List agents newest first, fetch one by id, and delete one.
 
 Files: `src/juicebox/api/agents.py`,
 `tests/integration/test_api_agents_read.py`
