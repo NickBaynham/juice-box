@@ -3,11 +3,13 @@
 import asyncio
 from pathlib import Path
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 
+from juicebox.app import create_app
 from juicebox.persistence.database import session_scope
 from juicebox.persistence.models import Base
 
@@ -68,3 +70,16 @@ async def truncate_tables():
 
     async with session_scope() as session:
         await session.execute(text(f"TRUNCATE {table_names} RESTART IDENTITY CASCADE"))
+
+
+@pytest.fixture
+async def client():
+    """Async HTTP client driving the app over ASGI, per `test_health.py`.
+
+    Never `starlette.testclient.TestClient`: it runs the app on its own
+    event loop in a portal thread, while the engine is `NullPool`'d
+    because of per-test loops.
+    """
+    transport = httpx.ASGITransport(app=create_app())
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as async_client:
+        yield async_client

@@ -8,6 +8,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `POST /agents`: creates an agent from a two-document YAML body (an
+  agent definition, then an objective), validating both with
+  `AgentDefinition.model_validate` and `ObjectiveDocument.model_validate`
+  and persisting through `AgentRepository.create`. Responds `201` with
+  the new agent's `id` and lowercase `status`; a body that is not
+  exactly two documents, fails schema validation, or fails to parse as
+  YAML gets a `422`. The definition is stored with
+  `model_dump(by_alias=True)` so it re-validates on read; the objective
+  is stored as `Objective.model_dump()`, without the `{objective: ...}`
+  envelope. `repository_url` and `base_branch` are read from the
+  definition's `repository` block, `null` when it is absent.
+- `juicebox.api.errors.validation_error_detail`: turns a
+  `pydantic.ValidationError` or `yaml.YAMLError` into the JSON-serialisable
+  `detail` list a `422` response carries, with `loc` always a list
+  (never a tuple) and never dropped when empty. Registered on the app as
+  exception handlers for both exception types, so neither becomes a
+  `500`.
 - Declarative schemas documentation (`docs/schemas.md`): the agent
   definition and objective document formats field by field, with types,
   defaults, and closed value sets; the `^(\d+)(Ki|Mi|Gi|Ti)$` and

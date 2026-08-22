@@ -179,6 +179,23 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
 - FastAPI application built by a factory, titled Juice Box and versioned from
   the package.
 - `GET /health` returning the service status and running version.
+- `POST /agents` creating an agent from a two-document YAML body (an
+  agent definition, then an objective). Validates the first document
+  against `AgentDefinition` and the second against `ObjectiveDocument`,
+  persists through `AgentRepository.create`, and returns `201` with the
+  agent's `id` and lowercase `status`. `repository_url` and
+  `base_branch` are read from the definition's optional `repository`
+  block. A body that is not exactly two YAML documents, or that fails
+  schema or YAML validation, gets a `422`.
+- `juicebox.api.errors.validation_error_detail`, mapping a
+  `pydantic.ValidationError` or `yaml.YAMLError` to the `detail` list a
+  `422` response body carries, with `loc` as a JSON-safe list that stays
+  `[]` rather than being dropped when empty. Registered on the app as
+  exception handlers for both exception types, so neither surfaces as a
+  `500`.
+- `juicebox.api.dependencies.get_session`, an async generator dependency
+  yielding an `AsyncSession` from `session_scope()`, so routes take a
+  session through `Depends` and never open one directly.
 
 ## Container image
 

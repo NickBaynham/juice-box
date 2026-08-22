@@ -162,7 +162,7 @@ contradiction rather than filling a gap.
 
 ### 1. Router package, agent creation, and the validation error contract
 
-- [ ] Create an agent from a definition and objective, and reject a
+- [x] Create an agent from a definition and objective, and reject a
       malformed document with field-level errors.
 
 Files: `src/juicebox/api/agents.py`, `src/juicebox/api/dependencies.py`,
