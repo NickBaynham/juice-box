@@ -1,6 +1,6 @@
 """Objective envelope: specification section 9."""
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from juicebox.schemas.agent import NAME_PATTERN
 
@@ -44,6 +44,15 @@ class Objective(BaseModel):
 
     id: str = Field(pattern=NAME_PATTERN)
     goal: str = Field(min_length=1)
+
+    @field_validator("goal")
+    @classmethod
+    def _strip_and_require_nonempty(cls, value: str) -> str:
+        """Match `system_prompt`: a goal of only whitespace is not a goal."""
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("goal must not be empty")
+        return stripped
     context: dict[str, str] = {}
     tasks: list[str] = []
     constraints: list[str] = []

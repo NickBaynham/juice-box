@@ -9,8 +9,8 @@ from urllib.parse import urlsplit
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 NAME_PATTERN = r"^[a-z0-9][a-z0-9-]*$"
-MEMORY_PATTERN = re.compile(r"^(\d+)(Ki|Mi|Gi|Ti)$")
-TIMEOUT_PATTERN = re.compile(r"^(\d+)(s|m|h)$")
+MEMORY_PATTERN = re.compile(r"^(\d+)(Ki|Mi|Gi|Ti)\Z")
+TIMEOUT_PATTERN = re.compile(r"^(\d+)(s|m|h)\Z")
 MEMORY_MULTIPLIERS = {"Ki": 1024, "Mi": 1024**2, "Gi": 1024**3, "Ti": 1024**4}
 TIMEOUT_UNITS = {"s": "seconds", "m": "minutes", "h": "hours"}
 

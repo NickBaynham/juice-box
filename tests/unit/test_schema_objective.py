@@ -57,3 +57,13 @@ def test_rejects_a_document_with_no_objective_key():
     with pytest.raises(ValidationError) as caught:
         load_objective("goal: do the thing\n")
     assert caught.value.errors()[0]["loc"] == ("objective",)
+
+
+def test_rejects_a_whitespace_only_goal():
+    """`system_prompt` strips and rejects blank; `goal` must match it."""
+    document = MINIMAL.replace(
+        "goal: Improve automated API test coverage.", 'goal: "   "'
+    )
+    with pytest.raises(ValidationError) as caught:
+        load_objective(document)
+    assert caught.value.errors()[0]["loc"] == ("objective", "goal")

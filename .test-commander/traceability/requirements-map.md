@@ -15,7 +15,7 @@ planned.
 |-----------|------|--------------|--------------------------|
 | W0 Foundation | 0001 | none — infrastructure only | none |
 | W1 Persistence | 0002 | MVP-10, AMD-01 | `state-durability.feature` (authored in W9) |
-| W2 Schemas | 0003 | MVP-02, MVP-03 | `agent-definition.feature` |
+| W2 Schemas | 0003 | MVP-02, MVP-03 | `agent-definition.feature` (authored in W3) |
 | W3 Agents API | 0004 | MVP-01, MVP-02, MVP-03, MVP-11, MVP-12, MVP-13, AMD-06, AMD-07 | `agent-lifecycle.feature` |
 | W4 Events and logging | 0005 | MVP-11 | `observability.feature` |
 | W5 Tools | 0006 | MVP-06, MVP-07, MVP-08 | `tool-execution.feature` |
@@ -52,3 +52,18 @@ neither closes here: W1 delivers durable state — the seven entities,
 their migrations, and the repository layer — and W9 delivers the
 interrupted-run behaviour and authors `state-durability.feature` that
 exercises both halves. Their inventory status stays `planned` until then.
+
+## W2 completion note
+
+W2 completed on 2026-08-21. MVP-02 and MVP-03 both span W2 and W3, so
+neither closes here: W2 accepts an objective, a specification, and a
+repository URL as validated documents, and W3 exposes the endpoint that
+takes them and authors `agent-definition.feature`. Their inventory status
+stays `planned` until then.
+
+No `.feature` file exists anywhere in the repository yet. Per ADR-0008
+these are pytest tests under `tests/acceptance/`, which does not exist
+until W12, and plans 0002 and 0003 exempt that suite explicitly. Design
+0002's workstream criterion 3 is therefore unsatisfiable for every
+workstream before W12 by the same exemption that covers criterion 2, and
+should be amended to say so rather than being exempted plan by plan.

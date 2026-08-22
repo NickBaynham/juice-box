@@ -69,13 +69,69 @@ key the specification never names. W3 persists validated definitions as
 
 ## Agent definition
 
-`load_agent_definition` validates an `AgentDefinition`.
+`load_agent_definition` validates an `AgentDefinition`. Dotted names in the
+table below are nesting, not literal keys: `agent.model.provider` means
+`provider` inside `model` inside `agent`. A document using every optional
+block looks like this, and is kept at
+[`examples/full.agent.yaml`](../examples/full.agent.yaml), which the test
+suite validates on every run:
+
+```yaml
+apiVersion: juicebox.ai/v1
+kind: Agent
+
+metadata:
+  name: full-example
+
+agent:
+  model:
+    provider: anthropic
+    model: claude-sonnet
+  system_prompt: |
+    You are an autonomous software quality engineering agent.
+
+skills:
+  - git
+  - coding
+
+secrets:
+  - github-token
+
+runtime:
+  cpu: 2
+  memory: 4Gi
+  timeout: 8h
+
+permissions:
+  filesystem: read-write
+  network: true
+  shell: true
+
+repository:
+  url: https://github.com/example/application
+  branch: juicebox/full-example
+
+execution:
+  max_iterations: 50
+  require_approval_for:
+    - merge
+    - force-push
+```
+
+The two smallest valid documents — one of each kind — are
+[`examples/test-commander.agent.yaml`](../examples/test-commander.agent.yaml)
+and
+[`examples/improve-api-tests.objective.yaml`](../examples/improve-api-tests.objective.yaml),
+copied verbatim from specification sections 8 and 9.
 
 | Field | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `apiVersion` | `Literal["juicebox.ai/v1"]` | required | Python attribute `api_version`. See [the `by_alias` rule](#the-by_alias-rule). |
 | `kind` | `Literal["Agent"]` | required | |
+| `metadata` | mapping | required | Carries `name` and nothing else. |
 | `metadata.name` | `str` | required | Must match [the name grammar](#name-grammar). W6 derives a work branch and container name from it directly. |
+| `agent` | mapping | required | Carries `model` and `system_prompt` and nothing else. `skills`, `runtime`, `permissions`, `repository`, and `execution` are siblings of `agent`, not children of it. |
+| `agent.model` | mapping | required | Carries `provider` and `model`. |
 | `agent.model.provider` | `str` | required | |
 | `agent.model.model` | `str` | required | |
 | `agent.system_prompt` | `str` | required | Stripped of leading/trailing whitespace; rejected if empty or all whitespace after stripping. |

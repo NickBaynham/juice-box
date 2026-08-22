@@ -27,7 +27,11 @@ Plan 0001's stack plus Pydantic 2.x and PyYAML.
 - Definition of done: design 0002, with the same acceptance-suite
   exemption plan 0002 records: `pdm run pytest tests/acceptance` exits 4
   because that directory does not exist until W12. Close-out verifies
-  `make lint test && make test-integration` instead.
+  `make lint test && make test-integration` instead. The same exemption
+  covers criterion 3: it requires the acceptance scenarios traced to this
+  workstream to pass, and those scenarios are pytest tests in the same
+  absent directory. MVP-02 and MVP-03 both span W2 and W3 and close with
+  the later one.
 - Consumes ADR-0004 (approval gates fail closed) and ADR-0007 (skills are
   filesystem instruction bundles).
 - Every model sets `model_config = ConfigDict(extra="forbid")`. ADR-0004

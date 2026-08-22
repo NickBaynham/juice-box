@@ -68,3 +68,11 @@ def test_a_document_without_permissions_is_least_privileged():
     assert definition.permissions.filesystem is FilesystemAccess.READ_ONLY
     assert definition.permissions.network is False
     assert definition.runtime is None
+
+
+@pytest.mark.parametrize("memory", ["4Gi\n", "4Gi\r\n"])
+def test_rejects_memory_with_a_trailing_newline(memory):
+    """`$` matches before a trailing newline; a YAML block scalar produces one."""
+    with pytest.raises(ValidationError) as caught:
+        Runtime.model_validate({"cpu": 2, "memory": memory, "timeout": "8h"})
+    assert caught.value.errors()[0]["loc"] == ("memory",)
