@@ -449,7 +449,7 @@ Commit: `Add the lifecycle state machine`
 
 ### 4. Start and stop
 
-- [ ] Start an agent, creating its first run attempt, and stop it.
+- [x] Start an agent, creating its first run attempt, and stop it.
 
 Files: `src/juicebox/api/agents.py`,
 `tests/integration/test_api_lifecycle.py`

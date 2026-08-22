@@ -10,7 +10,12 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from juicebox.api.dependencies import get_session
-from juicebox.persistence.repositories import AgentRepository
+from juicebox.lifecycle.transitions import (
+    IllegalTransition,
+    LifecycleAction,
+    next_status,
+)
+from juicebox.persistence.repositories import AgentRepository, RunRepository
 from juicebox.schemas.agent import AgentDefinition
 from juicebox.schemas.objective import ObjectiveDocument
 
@@ -101,3 +106,39 @@ async def get_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSum
 async def delete_agent(agent_id: uuid.UUID, session: SessionDependency) -> None:
     """Delete an agent. Deleting an absent agent is a no-op: still 204."""
     await AgentRepository.delete(session, agent_id)
+
+
+async def _apply_lifecycle_action(
+    agent_id: uuid.UUID, action: LifecycleAction, session: SessionDependency
+) -> AgentSummary:
+    """Move an agent through `action`, 404 if absent, 409 if illegal.
+
+    `START` also creates the agent's next run attempt. Shared by every
+    lifecycle route so each one is a decorator naming its action, not a
+    repeated body.
+    """
+    agent = await AgentRepository.get(session, agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="agent not found")
+
+    try:
+        status = next_status(agent.status, action)
+    except IllegalTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    agent = await AgentRepository.set_status(session, agent_id, status)
+    if action is LifecycleAction.START:
+        await RunRepository.create_attempt(session, agent_id)
+    return AgentSummary.model_validate(agent)
+
+
+@router.post("/agents/{agent_id}/start")
+async def start_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
+    """Start an agent, creating its first run attempt."""
+    return await _apply_lifecycle_action(agent_id, LifecycleAction.START, session)
+
+
+@router.post("/agents/{agent_id}/stop")
+async def stop_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
+    """Stop an agent."""
+    return await _apply_lifecycle_action(agent_id, LifecycleAction.STOP, session)

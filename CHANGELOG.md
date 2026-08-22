@@ -80,6 +80,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   graph, including the system transitions no caller action names
   (`starting -> running`, `running -> completed`, `running -> failed`),
   so W9 has one place to ask instead of calling `set_status` directly.
+- `POST /agents/{agent_id}/start` and `POST /agents/{agent_id}/stop`: move
+  an agent through the lifecycle state machine over one shared handler
+  that loads the agent, asks `next_status` for the target state, and maps
+  `IllegalTransition` to a `409` whose body carries the exception's
+  message, naming both the current status and the action. `start` also
+  calls `RunRepository.create_attempt`, creating the agent's first run
+  attempt; `stop` does not. Neither starts a container or runs an
+  execution loop — the agent stays `starting` until W9 exists. Both
+  respond `404` for an absent agent, the same body `GET`
+  `/agents/{agent_id}` uses.
 
 ### Fixed
 
@@ -88,6 +98,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests are isolated from `JUICEBOX_` variables and from a developer's
   `.env` file, so the tests asserting defaults no longer depend on the
   environment they run in.
+- `AgentRepository.set_status` refreshes the agent after flushing, so its
+  server-computed `updated_at` is populated instead of left expired.
+  Serialising the agent immediately afterward, as the lifecycle routes do,
+  previously raised `MissingGreenlet` on the first attribute access.
 
 ### Changed
 

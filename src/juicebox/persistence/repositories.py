@@ -81,12 +81,18 @@ class AgentRepository:
     async def set_status(
         session: AsyncSession, agent_id: uuid.UUID, status: AgentStatus
     ) -> Agent | None:
-        """Set an agent's status and, via `onupdate`, advance `updated_at`."""
+        """Set an agent's status and, via `onupdate`, advance `updated_at`.
+
+        Refreshes after flush: `onupdate` is server-computed, so without a
+        refresh `updated_at` is left expired and a caller serialising the
+        agent triggers an unawaited lazy load.
+        """
         agent = await session.get(Agent, agent_id)
         if agent is None:
             return None
         agent.status = status
         await session.flush()
+        await session.refresh(agent)
         return agent
 
     @staticmethod

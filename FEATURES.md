@@ -205,6 +205,16 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   idempotent. Both read routes respond with `AgentSummary`: the agent's
   id, name, lowercase status, repository fields, and timestamps, never
   its `definition` or `objective` blob.
+- `POST /agents/{agent_id}/start` and `POST /agents/{agent_id}/stop`,
+  sharing one handler that loads the agent, asks
+  `juicebox.lifecycle.next_status` for the transition, and applies it
+  through `AgentRepository.set_status`. Both respond `200` with the
+  updated `AgentSummary`, `404` if the agent does not exist, and `409`
+  with the `IllegalTransition` message if the transition is not legal
+  from the agent's current status. `start` also calls
+  `RunRepository.create_attempt`, creating the agent's first run attempt;
+  `stop` does not. Neither starts a container or runs an execution loop —
+  the agent stays `starting` until W9 exists.
 
 ## Lifecycle
 
