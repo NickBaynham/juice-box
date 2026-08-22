@@ -47,6 +47,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `testing`, plus W12's `playwright-testing`), and increment 6's review
   recommendation to update the specification's example rather than build
   four more skill bundles. Closes out workstream W2: declarative schemas.
+- `POST /agents/{agent_id}/pause`, `.../resume`, and `.../restart`: three
+  more routes over increment 4's shared lifecycle handler. `pause` moves a
+  `running` agent to `paused`; `resume` moves it back to `running`;
+  `restart` moves a `failed` or `stopped` agent to `starting` and, like
+  `start`, calls `RunRepository.create_attempt`, so a restarted agent
+  gets a fresh, higher-numbered attempt rather than reusing or
+  overwriting an earlier one, per ADR-0006. All three respond `404` for
+  an absent agent and `409`, naming both the current status and the
+  action, for an illegal transition — pausing a `created` agent or
+  restarting a `completed` one, for example.
 - ADR-0004 amended with the derivation of the six `ApprovalOperation`
   slugs from specification sections 8 and 16, and the enforcement table
   naming each operation's workstream and MVP status. Written into the ADR

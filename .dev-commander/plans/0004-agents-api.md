@@ -482,7 +482,7 @@ Commit: `Add start and stop`
 
 ### 5. Pause, resume, and restart
 
-- [ ] Pause a running agent, resume it, and restart a failed or stopped
+- [x] Pause a running agent, resume it, and restart a failed or stopped
       one into a fresh attempt.
 
 Files: `src/juicebox/api/agents.py`,

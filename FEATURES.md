@@ -215,6 +215,14 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   `RunRepository.create_attempt`, creating the agent's first run attempt;
   `stop` does not. Neither starts a container or runs an execution loop —
   the agent stays `starting` until W9 exists.
+- `POST /agents/{agent_id}/pause`, `.../resume`, and `.../restart`, three
+  more routes over the same shared handler. `pause` moves a `running`
+  agent to `paused`; `resume` moves it back to `running`; `restart` moves
+  a `failed` or `stopped` agent to `starting` and, like `start`, calls
+  `RunRepository.create_attempt` so the restarted agent gets a fresh,
+  higher-numbered run attempt rather than reusing or overwriting an
+  earlier one, per ADR-0006. All three share `start` and `stop`'s `404`
+  and `409` behaviour.
 
 ## Lifecycle
 

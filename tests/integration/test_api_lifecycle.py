@@ -1,4 +1,5 @@
-"""Integration tests for `POST /agents/{agent_id}/start` and `.../stop`."""
+"""Integration tests for the agent lifecycle routes: start, stop, pause,
+resume, and restart."""
 
 import uuid
 from pathlib import Path
@@ -6,7 +7,8 @@ from pathlib import Path
 import pytest
 
 from juicebox.persistence.database import session_scope
-from juicebox.persistence.repositories import RunRepository
+from juicebox.persistence.models import AgentStatus
+from juicebox.persistence.repositories import AgentRepository, RunRepository
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples"
 DEFINITION = (EXAMPLES / "test-commander.agent.yaml").read_text()
@@ -75,3 +77,67 @@ async def test_stop_agent_returns_404_for_an_absent_agent(client):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "agent not found"}
+
+
+@pytest.mark.integration
+async def test_pause_running_agent_transitions_to_paused(client):
+    agent_id = await _create_agent(client)
+    async with session_scope() as session:
+        await AgentRepository.set_status(session, uuid.UUID(agent_id), AgentStatus.RUNNING)
+
+    response = await client.post(f"/agents/{agent_id}/pause")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "paused"
+
+
+@pytest.mark.integration
+async def test_resume_paused_agent_transitions_to_running(client):
+    agent_id = await _create_agent(client)
+    async with session_scope() as session:
+        await AgentRepository.set_status(session, uuid.UUID(agent_id), AgentStatus.PAUSED)
+
+    response = await client.post(f"/agents/{agent_id}/resume")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "running"
+
+
+@pytest.mark.integration
+async def test_pause_created_agent_returns_409(client):
+    agent_id = await _create_agent(client)
+
+    response = await client.post(f"/agents/{agent_id}/pause")
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "cannot pause an agent that is created"}
+
+
+@pytest.mark.integration
+async def test_restart_failed_agent_creates_a_fresh_attempt(client):
+    agent_id = await _create_agent(client)
+    await client.post(f"/agents/{agent_id}/start")
+    async with session_scope() as session:
+        await AgentRepository.set_status(session, uuid.UUID(agent_id), AgentStatus.FAILED)
+
+    response = await client.post(f"/agents/{agent_id}/restart")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "starting"
+
+    async with session_scope() as session:
+        run = await RunRepository.get_current(session, uuid.UUID(agent_id))
+    assert run is not None
+    assert run.attempt == 2
+
+
+@pytest.mark.integration
+async def test_restart_completed_agent_returns_409(client):
+    agent_id = await _create_agent(client)
+    async with session_scope() as session:
+        await AgentRepository.set_status(session, uuid.UUID(agent_id), AgentStatus.COMPLETED)
+
+    response = await client.post(f"/agents/{agent_id}/restart")
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "cannot restart an agent that is completed"}

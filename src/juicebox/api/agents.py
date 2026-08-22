@@ -113,9 +113,9 @@ async def _apply_lifecycle_action(
 ) -> AgentSummary:
     """Move an agent through `action`, 404 if absent, 409 if illegal.
 
-    `START` also creates the agent's next run attempt. Shared by every
-    lifecycle route so each one is a decorator naming its action, not a
-    repeated body.
+    `START` and `RESTART` also create the agent's next run attempt.
+    Shared by every lifecycle route so each one is a decorator naming its
+    action, not a repeated body.
     """
     agent = await AgentRepository.get(session, agent_id)
     if agent is None:
@@ -127,7 +127,7 @@ async def _apply_lifecycle_action(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     agent = await AgentRepository.set_status(session, agent_id, status)
-    if action is LifecycleAction.START:
+    if action in (LifecycleAction.START, LifecycleAction.RESTART):
         await RunRepository.create_attempt(session, agent_id)
     return AgentSummary.model_validate(agent)
 
@@ -142,3 +142,21 @@ async def start_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentS
 async def stop_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
     """Stop an agent."""
     return await _apply_lifecycle_action(agent_id, LifecycleAction.STOP, session)
+
+
+@router.post("/agents/{agent_id}/pause")
+async def pause_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
+    """Pause a running agent."""
+    return await _apply_lifecycle_action(agent_id, LifecycleAction.PAUSE, session)
+
+
+@router.post("/agents/{agent_id}/resume")
+async def resume_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
+    """Resume a paused agent."""
+    return await _apply_lifecycle_action(agent_id, LifecycleAction.RESUME, session)
+
+
+@router.post("/agents/{agent_id}/restart")
+async def restart_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSummary:
+    """Restart a failed or stopped agent, creating a fresh run attempt."""
+    return await _apply_lifecycle_action(agent_id, LifecycleAction.RESTART, session)
