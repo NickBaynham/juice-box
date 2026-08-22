@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Annotated
 
 import yaml
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -98,7 +98,6 @@ async def get_agent(agent_id: uuid.UUID, session: SessionDependency) -> AgentSum
 
 
 @router.delete("/agents/{agent_id}", status_code=204)
-async def delete_agent(agent_id: uuid.UUID, session: SessionDependency) -> Response:
+async def delete_agent(agent_id: uuid.UUID, session: SessionDependency) -> None:
     """Delete an agent. Deleting an absent agent is a no-op: still 204."""
     await AgentRepository.delete(session, agent_id)
-    return Response(status_code=204)
