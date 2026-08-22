@@ -3,6 +3,7 @@
 import yaml
 
 from juicebox.schemas.agent import AgentDefinition
+from juicebox.schemas.objective import Objective, ObjectiveDocument
 
 
 def load_agent_definition(document: str) -> AgentDefinition:
@@ -13,3 +14,15 @@ def load_agent_definition(document: str) -> AgentDefinition:
     agent. Both propagate to the caller; W3 maps them to a 422 response.
     """
     return AgentDefinition.model_validate(yaml.safe_load(document))
+
+
+def load_objective(document: str) -> Objective:
+    """Parse and validate an objective document.
+
+    Validates through `ObjectiveDocument` rather than subscripting the
+    parsed mapping, so a document missing the `objective:` key, or one
+    that is a top-level list or empty, raises `pydantic.ValidationError`
+    with a `("objective", ...)` `loc` prefix instead of `KeyError` or
+    `TypeError`.
+    """
+    return ObjectiveDocument.model_validate(yaml.safe_load(document)).objective

@@ -80,6 +80,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   increment 7 documents each against its enforcement point and
   workstream. With this block wired on, specification section 8's example
   now validates end to end.
+- `juicebox.schemas.loading.load_objective(document)`, parsing a YAML
+  string and validating it against `ObjectiveDocument`, the objective
+  document envelope of specification section 9. Like `AgentDefinition`,
+  the envelope is a Pydantic model rather than a subscript into the
+  parsed mapping, so a document missing the `objective:` key, or one that
+  is a top-level list or empty, raises `pydantic.ValidationError` with a
+  `("objective", ...)` `loc` prefix instead of `KeyError` or `TypeError`.
+  `Objective.id` reuses `agent.NAME_PATTERN`; `success_criteria` is
+  required and non-empty, since W9 detects completion against it and an
+  objective without any can never finish, while `tasks` stays optional
+  because section 10 has the agent decompose the goal itself.
+  `CompletionAction` rejects `pull_request` without `push`, and `push`
+  without `commit`, since W10 pushes a branch it committed to. Section
+  9's example now validates end to end.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a

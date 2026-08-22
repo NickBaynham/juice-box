@@ -473,7 +473,7 @@ Commit: `Add repository and execution validation`
 
 ### 5. Objective schema
 
-- [ ] Validate the objective of specification section 9.
+- [x] Validate the objective of specification section 9.
 
 Files: `src/juicebox/schemas/objective.py`,
 `src/juicebox/schemas/loading.py`,

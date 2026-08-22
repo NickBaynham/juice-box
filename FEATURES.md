@@ -134,6 +134,19 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   `repository-data-deletion` — so ADR-0004's requirement that an unknown
   approval operation be rejected, not silently dropped, is enforceable.
   Specification section 8's full example now validates end to end.
+- `juicebox.schemas.loading.load_objective(document)`, validating a YAML
+  objective document against `ObjectiveDocument`, the envelope of
+  specification section 9. The envelope unwraps the top-level
+  `objective:` key through a Pydantic model rather than a dict subscript,
+  so a missing key, a top-level list, or an empty document all raise
+  `pydantic.ValidationError` with a `("objective", ...)` `loc` prefix
+  instead of `KeyError` or `TypeError`. `Objective.id` matches the same
+  `^[a-z0-9][a-z0-9-]*$` pattern as `Metadata.name`; `success_criteria`
+  is required with at least one entry, since W9 detects completion
+  against it, while `tasks`, `constraints`, and `context` default to
+  empty. `CompletionAction` rejects `pull_request` without `push`, and
+  `push` without `commit`, since W10 pushes a branch it committed to.
+  Specification section 9's example now validates end to end.
 
 ## Configuration
 
