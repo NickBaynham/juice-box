@@ -231,6 +231,13 @@ Minimal implementation: `errors.py` defines
 becomes a list because a tuple is not JSON, and the empty case must stay
 an empty list rather than being dropped.
 
+Every 422 this endpoint returns carries that same list-of-entries body,
+including the wrong-document-count case, whose entry has `loc == []` and
+`type == "document_count"`. A bare-string `detail` on one path would make a
+client indexing `detail[0]["msg"]` receive a character rather than raise, so
+the inconsistency corrupts silently instead of failing. An integration test
+posts all three malformed shapes and asserts one body shape across them.
+
 `dependencies.py` defines an async generator yielding an `AsyncSession`
 from `session_scope()`, for `Depends`.
 
