@@ -86,7 +86,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the envelope is a Pydantic model rather than a subscript into the
   parsed mapping, so a document missing the `objective:` key, or one that
   is a top-level list or empty, raises `pydantic.ValidationError` with a
-  `("objective", ...)` `loc` prefix instead of `KeyError` or `TypeError`.
+  a `loc` naming the field that failed, instead of `KeyError` or
+  `TypeError`. Errors inside an objective carry an `("objective", ...)`
+  prefix; a document that is not a mapping reports `loc == ()`.
   `Objective.id` reuses `agent.NAME_PATTERN`; `success_criteria` is
   required and non-empty, since W9 detects completion against it and an
   objective without any can never finish, while `tasks` stays optional

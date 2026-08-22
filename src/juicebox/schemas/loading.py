@@ -22,7 +22,11 @@ def load_objective(document: str) -> Objective:
     Validates through `ObjectiveDocument` rather than subscripting the
     parsed mapping, so a document missing the `objective:` key, or one
     that is a top-level list or empty, raises `pydantic.ValidationError`
-    with a `("objective", ...)` `loc` prefix instead of `KeyError` or
-    `TypeError`.
+    instead of `KeyError` or `TypeError`, neither of which W3 could map
+    to a 422.
+
+    Errors inside an objective carry an `("objective", ...)` `loc`
+    prefix. A document that is not a mapping at all reports `loc == ()`,
+    so a caller building a 422 body cannot assume a non-empty `loc`.
     """
     return ObjectiveDocument.model_validate(yaml.safe_load(document)).objective

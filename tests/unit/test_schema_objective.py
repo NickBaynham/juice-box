@@ -28,7 +28,10 @@ def test_rejects_an_objective_with_no_success_criteria():
 
 
 def test_rejects_empty_success_criteria():
-    document = MINIMAL.replace("    - critical API flows are tested\n", "")
+    document = MINIMAL.replace(
+        "  success_criteria:\n    - critical API flows are tested\n",
+        "  success_criteria: []\n",
+    )
     with pytest.raises(ValidationError) as caught:
         load_objective(document)
     error = caught.value.errors()[0]

@@ -1,6 +1,6 @@
 """Objective envelope: specification section 9."""
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from juicebox.schemas.agent import NAME_PATTERN
 
@@ -49,17 +49,6 @@ class Objective(BaseModel):
     constraints: list[str] = []
     success_criteria: list[str] = Field(min_length=1)
     completion_action: CompletionAction = CompletionAction()
-
-    @field_validator("success_criteria", mode="before")
-    @classmethod
-    def _empty_key_means_empty_list(cls, value: list[str] | None) -> list[str]:
-        """Treat `success_criteria:` written with no items as `[]`.
-
-        YAML parses a key followed by nothing as `None`, not an empty
-        list, which would otherwise fail as a type error rather than the
-        `min_length=1` check below.
-        """
-        return [] if value is None else value
 
 
 class ObjectiveDocument(BaseModel):

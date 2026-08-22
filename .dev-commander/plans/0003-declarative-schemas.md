@@ -512,7 +512,10 @@ def test_rejects_an_objective_with_no_success_criteria():
 
 
 def test_rejects_empty_success_criteria():
-    document = MINIMAL.replace("    - critical API flows are tested\n", "")
+    document = MINIMAL.replace(
+        "  success_criteria:\n    - critical API flows are tested\n",
+        "  success_criteria: []\n",
+    )
     with pytest.raises(ValidationError) as caught:
         load_objective(document)
     error = caught.value.errors()[0]
@@ -541,10 +544,15 @@ def test_rejects_a_document_with_no_objective_key():
 ```
 
 The two negative success-criteria tests are deliberately different: one
-removes the key, which fails as `missing`, and one empties the list, which
-fails as `too_short`. Without the second, an implementer who omits
-`min_length=1` passes every test while accepting an objective that W9 can
-never complete.
+removes the key, which fails as `missing`, and one writes `[]`, which fails
+as `too_short`. Without the second, an implementer who omits `min_length=1`
+passes every test while accepting an objective that W9 can never complete.
+
+The second must write `success_criteria: []` explicitly. Deleting the item
+line instead leaves `success_criteria:` with no value, which YAML parses as
+`None`, not `[]` — that fails as `list_type` whether or not `min_length=1`
+is present, so the test would catch nothing. Proven during increment 5's
+review.
 
 Minimal implementation: `CompletionAction` with `commit: bool = False`,
 `push: bool = False`, `pull_request: bool = False`, and a model validator

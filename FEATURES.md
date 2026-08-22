@@ -139,7 +139,7 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   specification section 9. The envelope unwraps the top-level
   `objective:` key through a Pydantic model rather than a dict subscript,
   so a missing key, a top-level list, or an empty document all raise
-  `pydantic.ValidationError` with a `("objective", ...)` `loc` prefix
+  `pydantic.ValidationError` naming the field that failed
   instead of `KeyError` or `TypeError`. `Objective.id` matches the same
   `^[a-z0-9][a-z0-9-]*$` pattern as `Metadata.name`; `success_criteria`
   is required with at least one entry, since W9 detects completion
