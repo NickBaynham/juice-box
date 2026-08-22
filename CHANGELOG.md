@@ -94,6 +94,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `CompletionAction` rejects `pull_request` without `push`, and `push`
   without `commit`, since W10 pushes a branch it committed to. Section
   9's example now validates end to end.
+- `examples/test-commander.agent.yaml` and
+  `examples/improve-api-tests.objective.yaml`, specification section 8's
+  and section 9's own examples, copied verbatim and proved to validate
+  unchanged. `examples/full.agent.yaml`, a new document exercising every
+  optional block of the agent definition — `skills`, `secrets`, `runtime`,
+  `permissions`, `repository`, and `execution` with `require_approval_for`
+  naming all six `ApprovalOperation` values — ahead of increment 7's
+  documentation check. `tests/unit/test_examples_validate.py`, a unit
+  test (not `integration`: it parses YAML and touches no database) proving
+  every `examples/*.agent.yaml` and `examples/*.objective.yaml` file
+  validates, plus a glob-coverage test guarding against a `*.yaml` file
+  under neither glob going unchecked. Section 8's example names skills
+  `git, playwright, pytest, api-testing, code-analysis`; ADR-0007 ships
+  only `git`, `coding`, and `testing`, and W12 adds `playwright-testing`,
+  so this example will validate here in W2 but be rejected with a 422 once
+  W3 enforces skill existence. W7 owns resolving the mismatch, either by
+  renaming its skills to match the specification's example or by having
+  W12 update the example.
 - Persistence layer documentation (`docs/persistence.md`): the seven
   tables and their columns, the status and type enums and their lowercase
   legal values, every repository method's signature, how to create a

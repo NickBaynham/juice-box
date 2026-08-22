@@ -1,0 +1,40 @@
+apiVersion: juicebox.ai/v1
+kind: Agent
+
+metadata:
+  name: test-commander
+
+agent:
+  model:
+    provider: anthropic
+    model: claude-sonnet
+
+  system_prompt: |
+    You are an autonomous software quality engineering agent.
+
+skills:
+  - git
+  - playwright
+  - pytest
+  - api-testing
+  - code-analysis
+
+runtime:
+  cpu: 2
+  memory: 4Gi
+  timeout: 8h
+
+permissions:
+  filesystem: read-write
+  network: true
+  shell: true
+
+repository:
+  url: https://github.com/example/application
+  branch: juicebox/test-commander
+
+execution:
+  max_iterations: 100
+  require_approval_for:
+    - production-deployment
+    - merge

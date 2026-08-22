@@ -578,7 +578,7 @@ Commit: `Add objective schema`
 
 ### 6. Example documents
 
-- [ ] Ship the specification's own examples and prove they validate.
+- [x] Ship the specification's own examples and prove they validate.
 
 Files: `examples/test-commander.agent.yaml`,
 `examples/full.agent.yaml`,

@@ -1,0 +1,34 @@
+objective:
+  id: improve-api-tests
+
+  goal: >
+    Improve automated API test coverage for the application.
+
+  context:
+    application: Juice Shop
+    framework: Playwright
+
+  tasks:
+    - inspect existing tests
+    - identify coverage gaps
+    - generate additional tests
+    - execute tests
+    - repair failures
+    - generate quality report
+
+  constraints:
+    - do not modify production application behavior
+    - tests must be deterministic
+    - follow existing repository conventions
+
+  success_criteria:
+    - critical API flows are tested
+    - all generated tests pass
+    - no existing tests regress
+    - report is generated
+    - changes are committed
+
+  completion_action:
+    commit: true
+    push: true
+    pull_request: true

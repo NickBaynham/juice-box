@@ -1,0 +1,48 @@
+apiVersion: juicebox.ai/v1
+kind: Agent
+
+metadata:
+  name: full-example
+
+agent:
+  model:
+    provider: anthropic
+    model: claude-sonnet
+
+  system_prompt: |
+    You are an autonomous software quality engineering agent exercising
+    every optional block of the agent definition envelope.
+
+skills:
+  - git
+  - coding
+  - testing
+
+secrets:
+  - github-token
+  - anthropic-api-key
+  - aws-credentials
+
+runtime:
+  cpu: 2
+  memory: 4Gi
+  timeout: 8h
+
+permissions:
+  filesystem: read-write
+  network: true
+  shell: true
+
+repository:
+  url: https://github.com/example/application
+  branch: juicebox/full-example
+
+execution:
+  max_iterations: 50
+  require_approval_for:
+    - merge
+    - production-deployment
+    - secret-modification
+    - force-push
+    - cloud-resource-deletion
+    - repository-data-deletion

@@ -147,6 +147,15 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   empty. `CompletionAction` rejects `pull_request` without `push`, and
   `push` without `commit`, since W10 pushes a branch it committed to.
   Specification section 9's example now validates end to end.
+- `examples/` directory: specification section 8's and section 9's own
+  examples (`test-commander.agent.yaml`, `improve-api-tests.objective.yaml`)
+  copied verbatim, plus `full.agent.yaml`, exercising every optional block
+  of the agent definition — `skills`, `secrets`, `runtime`, `permissions`,
+  `repository`, and `execution` with every `ApprovalOperation` value.
+  `tests/unit/test_examples_validate.py` proves every `examples/*.agent.yaml`
+  and `examples/*.objective.yaml` file validates against the loaders above,
+  and that every `examples/*.yaml` file is covered by one of those two
+  globs.
 
 ## Configuration
 
