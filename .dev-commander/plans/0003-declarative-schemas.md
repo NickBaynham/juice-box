@@ -663,7 +663,7 @@ Commit: `Add example agent and objective documents`
 
 ### 7. Workstream close-out
 
-- [ ] Document the schemas, amend ADR-0004, and close out W2.
+- [x] Document the schemas, amend ADR-0004, and close out W2.
 
 Files: `docs/schemas.md`, `.dev-commander/design/adr-0004-approval-gates-fail-closed-in-mvp.md`,
 `README.md`, `CHANGELOG.md`, `FEATURES.md`, `TODO.md`

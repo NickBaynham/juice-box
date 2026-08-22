@@ -6,6 +6,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Declarative schemas documentation (`docs/schemas.md`): the agent
+  definition and objective document formats field by field, with types,
+  defaults, and closed value sets; the `^(\d+)(Ki|Mi|Gi|Ti)$` and
+  `^(\d+)(s|m|h)$` unit grammars and that a bare number is rejected; the
+  least-privilege permission defaults and why `permissions` defaults to a
+  full instance rather than `null`; that `context` values must be
+  strings; that `require_approval_for` is a list tolerating duplicates,
+  not a set; that `secrets` and `skills` entries are checked against a
+  name grammar, not scanned for credentials, which is `gitleaks`'s job in
+  CI; that `repository.url` must be `https://` and must not embed
+  credentials; the `by_alias` rule W3 needs to round-trip a definition
+  through `JSONB` (`api_version` carries the alias `apiVersion` and
+  deliberately has no `populate_by_name`, so a bare `model_dump()`
+  produces a document that will not re-validate); and the error-location
+  contract (an error inside an objective carries an `("objective", ...)`
+  `loc` prefix, but a document that is not a mapping at all reports
+  `loc == ()`). Records, without resolving, the conflict between section
+  8's example skill names (`git, playwright, pytest, api-testing,
+  code-analysis`) and ADR-0007's MVP skill set (`git`, `coding`,
+  `testing`, plus W12's `playwright-testing`), and increment 6's review
+  recommendation to update the specification's example rather than build
+  four more skill bundles. Closes out workstream W2: declarative schemas.
+- ADR-0004 amended with the derivation of the six `ApprovalOperation`
+  slugs from specification sections 8 and 16, and the enforcement table
+  naming each operation's workstream and MVP status. Written into the ADR
+  itself rather than left in the plan, since four other document
+  amendments were already queued unserviced from earlier reviews.
+
 ### Fixed
 
 - Settings ignores unrelated keys in `.env` instead of refusing to start, so

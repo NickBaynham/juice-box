@@ -156,6 +156,17 @@ What works today. Planned work is tracked in [TODO.md](TODO.md).
   and `examples/*.objective.yaml` file validates against the loaders above,
   and that every `examples/*.yaml` file is covered by one of those two
   globs.
+- `docs/schemas.md`, documenting both document formats field by field —
+  types, defaults, and closed value sets — the memory and timeout unit
+  grammars, the least-privilege permission defaults and why an omitted
+  block must not grant more than a present one, the `by_alias` rule W3
+  needs to round-trip a definition through `JSONB`, the error-location
+  contract for a document that fails validation before it is even a
+  mapping, and the closed set of six approval operations against the
+  enforcement table naming which three are live in the MVP and which
+  three are accepted but inert. Records, without resolving, the conflict
+  between section 8's example skill names and ADR-0007's MVP skill set.
+  Closes out workstream W2: declarative schemas.
 
 ## Configuration
 

@@ -62,3 +62,89 @@ run continues.
   reason rather than silent.
 - The event name `approval.requested` from section 19 is emitted in the
   MVP, so Phase 2 adds a responder to an existing signal.
+
+## Amended 2026-08-21
+
+This decision requires `execution.require_approval_for` to reject an
+unknown value with a 422 rather than silently drop it. Rejection needs an
+enumeration, and the specification gives none. Workstream W2 defines one;
+this amendment records it here rather than leaving it to live only in
+plan `0003-declarative-schemas.md`, where the next workstream would not
+find it.
+
+### Deriving the six operations
+
+The specification names approval-worthy operations in two places that
+disagree with each other in both form and content, and neither is a
+closed set on its own:
+
+- Section 8's example uses two slugs directly in
+  `execution.require_approval_for`: `production-deployment`, `merge`.
+- Section 16 lists six prose phrases under an "Examples:" heading of
+  operations that "can require explicit approval": `merge pull request`,
+  `delete cloud resource`, `deploy production`, `modify secrets`,
+  `force push`, `delete repository data`.
+
+W2 defines `ApprovalOperation`, a closed `StrEnum`, as slugs derived from
+section 16's six phrases, reconciled with section 8's two slugs where
+they name the same operation (`deploy production` becomes
+`production-deployment`, matching section 8's own spelling; `merge pull
+request` becomes `merge`, likewise):
+
+- `merge`
+- `force-push`
+- `repository-data-deletion` (from "delete repository data")
+- `production-deployment` (from "deploy production")
+- `cloud-resource-deletion` (from "delete cloud resource")
+- `secret-modification` (from "modify secrets")
+
+### Enforcement table
+
+Three of the six operations have an MVP enforcement point; three do not,
+because the tool layer that could attempt them does not exist in the
+MVP.
+
+| Operation | Enforced by | Status in the MVP |
+| --- | --- | --- |
+| `merge` | W9, git tool | Enforced |
+| `force-push` | W9, git tool | Enforced |
+| `repository-data-deletion` | W9, filesystem and git tools | Enforced |
+| `production-deployment` | none | Accepted, inert — section 29 makes deployment a non-goal |
+| `cloud-resource-deletion` | none | Accepted, inert — W5 ships no cloud tool |
+| `secret-modification` | none | Accepted, inert — W5 ships no secret-mutation tool |
+
+The inert rows are the point of this table, not a gap to excuse. This
+ADR exists because a gate that looks active and is not gives false
+confidence, and the specification's own example
+(`examples/test-commander.agent.yaml`, copied verbatim from section 8)
+declares `require_approval_for: [production-deployment, merge]`. Read
+that example alone, and both operations look equally live. They are not:
+`merge` is enforced by W9's git tool; `production-deployment` is accepted
+by validation and then enforces nothing, because no tool in W5 can
+attempt a production deployment and section 29 makes deployment an
+explicit MVP non-goal. `cloud-resource-deletion` and
+`secret-modification` are inert for the same reason — W5 ships shell,
+filesystem, and git tools only.
+
+Accepting the three inert operations rather than rejecting them is
+still the right call: rejecting `production-deployment` would break
+section 8's own example, and the schema's job is to validate the
+document's shape, not to second-guess which operations happen to have a
+tool behind them yet. The false-confidence risk this ADR names is
+addressed by documentation, not by narrowing the enum — see
+`docs/schemas.md#approval-operations`, which carries this same table and
+is the page a reader consults before writing `require_approval_for:`.
+
+### Consequences of this amendment
+
+- W6 and W9, when they enforce, must name operations from exactly this
+  six-value set, or a gate silently never fires.
+- An operator who writes `production-deployment`,
+  `cloud-resource-deletion`, or `secret-modification` into
+  `require_approval_for` gets a document that validates and a gate that
+  does nothing. This is now documented in two places
+  (`docs/schemas.md` and here) rather than discoverable only by reading
+  W9's source once it lands.
+- This amendment does not change the Decision or Consequences sections
+  above; it only closes the gap between "unknown values are rejected"
+  and "here is the enumeration that makes rejection possible."
