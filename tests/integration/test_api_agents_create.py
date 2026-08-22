@@ -45,3 +45,25 @@ async def test_create_agent_rejects_a_single_document_body(client):
     response = await client.post("/agents", content=DEFINITION)
 
     assert response.status_code == 422
+
+
+@pytest.mark.integration
+async def test_every_422_body_has_the_same_shape(client):
+    """A client parsing detail[0]["msg"] must not meet a bare string.
+
+    Indexing a string yields a character rather than raising, so an
+    inconsistent shape here corrupts a client silently instead of failing.
+    """
+    bodies = [
+        DEFINITION,
+        DEFINITION.replace("juicebox.ai/v1", "juicebox.ai/v2") + "---\n" + OBJECTIVE,
+        "apiVersion: [unclosed\n",
+    ]
+    for body in bodies:
+        response = await client.post("/agents", content=body)
+        assert response.status_code == 422, body
+        detail = response.json()["detail"]
+        assert isinstance(detail, list), detail
+        assert isinstance(detail[0], dict), detail
+        assert set(detail[0]) == {"loc", "msg", "type"}
+        assert isinstance(detail[0]["loc"], list)

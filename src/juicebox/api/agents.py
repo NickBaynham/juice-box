@@ -30,7 +30,16 @@ async def create_agent(request: Request, session: SessionDependency) -> dict[str
     if len(documents) != 2:
         raise HTTPException(
             status_code=422,
-            detail=f"expected exactly two YAML documents, got {len(documents)}",
+            detail=[
+                {
+                    "loc": [],
+                    "msg": (
+                        "expected exactly two YAML documents, a definition and an "
+                        f"objective, got {len(documents)}"
+                    ),
+                    "type": "document_count",
+                }
+            ],
         )
 
     definition = AgentDefinition.model_validate(documents[0])
