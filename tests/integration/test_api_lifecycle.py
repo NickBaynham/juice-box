@@ -5,9 +5,10 @@ import uuid
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
 from juicebox.persistence.database import session_scope
-from juicebox.persistence.models import AgentStatus
+from juicebox.persistence.models import AgentStatus, Run
 from juicebox.persistence.repositories import AgentRepository, RunRepository
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples"
@@ -118,6 +119,9 @@ async def test_restart_failed_agent_creates_a_fresh_attempt(client):
     agent_id = await _create_agent(client)
     await client.post(f"/agents/{agent_id}/start")
     async with session_scope() as session:
+        first = await RunRepository.get_current(session, uuid.UUID(agent_id))
+    first_run_id = first.id
+    async with session_scope() as session:
         await AgentRepository.set_status(session, uuid.UUID(agent_id), AgentStatus.FAILED)
 
     response = await client.post(f"/agents/{agent_id}/restart")
@@ -127,8 +131,21 @@ async def test_restart_failed_agent_creates_a_fresh_attempt(client):
 
     async with session_scope() as session:
         run = await RunRepository.get_current(session, uuid.UUID(agent_id))
+        runs = list(
+            await session.scalars(
+                select(Run)
+                .where(Run.agent_id == uuid.UUID(agent_id))
+                .order_by(Run.attempt)
+            )
+        )
     assert run is not None
     assert run.attempt == 2
+
+    # ADR-0006: a restarted agent still shows its earlier failed attempts.
+    # Asserting only get_current().attempt == 2 would also pass an
+    # implementation that deleted the first run and recreated it.
+    assert [r.attempt for r in runs] == [1, 2]
+    assert runs[0].id == first_run_id
 
 
 @pytest.mark.integration
