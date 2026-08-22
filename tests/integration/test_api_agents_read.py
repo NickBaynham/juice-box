@@ -59,10 +59,16 @@ async def test_get_agent_returns_one_agent_with_a_lowercase_status(client):
 
 @pytest.mark.integration
 async def test_get_agent_returns_404_for_an_absent_but_valid_uuid(client):
+    """The body is asserted, not just the status.
+
+    Starlette answers an unmatched path with its own 404, so a status-only
+    assertion passes even with the route deleted, and passes again if the
+    handler returns 404 for every id including agents that exist.
+    """
     response = await client.get(f"/agents/{uuid.uuid4()}")
 
     assert response.status_code == 404
-    assert isinstance(response.json(), dict)
+    assert response.json() == {"detail": "agent not found"}
 
 
 @pytest.mark.integration
@@ -76,11 +82,16 @@ async def test_get_agent_returns_422_for_a_malformed_id(client):
 async def test_delete_agent_returns_204_and_the_agent_is_gone(client):
     agent_id = await _create_agent(client)
 
+    # Fetch before deleting, so the 404 afterwards means the delete worked
+    # rather than that the handler answers 404 unconditionally.
+    assert (await client.get(f"/agents/{agent_id}")).status_code == 200
+
     response = await client.delete(f"/agents/{agent_id}")
     assert response.status_code == 204
 
     follow_up = await client.get(f"/agents/{agent_id}")
     assert follow_up.status_code == 404
+    assert follow_up.json() == {"detail": "agent not found"}
 
 
 @pytest.mark.integration
